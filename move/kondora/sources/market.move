@@ -91,6 +91,9 @@ public struct ResolutionEvent has copy, drop {
     market_id: ID, actor: address, kind: u8, outcome: u8,
     evidence_hash: vector<u8>, evidence_uri: String, timestamp_ms: u64,
 }
+public struct LiquidityEvent has copy, drop {
+    market_id: ID, amount: u64, seed: u64, price_bps: u64,
+}
 
 fun init(ctx: &mut TxContext) {
     transfer::share_object(Registry {
@@ -155,6 +158,27 @@ public fun create_market(
     };
     registry.markets.push_back(object::id(&market));
     transfer::share_object(market);
+}
+
+/// Permanent house liquidity; no LP redemption or change to existing claims.
+/// Scale both virtual reserves equally so the current price is preserved.
+public fun add_liquidity(
+    registry: &Registry, market: &mut Market, funds: Coin<KUSD>, clock: &Clock, ctx: &TxContext,
+) {
+    assert!(registry.admin == ctx.sender() && market.registry == object::id(registry), EOwner);
+    assert!(market.state == 0 && clock.timestamp_ms() < market.close_ms, EState);
+    let amount = funds.value();
+    assert!(amount > 0 && amount <= MAX_AMOUNT - market.seed, EAmount);
+    let seed = market.seed + amount;
+    let yes = mul_div(market.reserve_yes, seed, market.seed);
+    let no = mul_div(market.reserve_no, seed, market.seed);
+    assert!(yes > 0 && no > 0 && yes + no <= MAX_AMOUNT * 10, EAmount);
+    market.reserve_yes = yes;
+    market.reserve_no = no;
+    market.seed = seed;
+    market.vault.join(funds.into_balance());
+    assert_reserves(market);
+    event::emit(LiquidityEvent { market_id: object::id(market), amount, seed, price_bps: price_bps(market) });
 }
 
 public fun open_position(
@@ -462,6 +486,48 @@ fun round_trip_and_interest() {
     close_position(&mut a, &mut m, 0, BPS, 9_800_000, &c, &ctx);
     assert!(a.positions.is_empty() && m.debt == 0 && m.liability_yes == 0);
     assert!(a.balance.value() < 1_000_000_000 && a.balance.value() >= 999_800_000);
+    test_cleanup(r, a, m, c);
+}
+#[test]
+fun liquidity_preserves_prices_and_existing_claims() {
+    let mut ctx = sui::tx_context::dummy();
+    let (r, mut a, mut m, c) = test_setup(&mut ctx);
+    open_position(&mut a, &mut m, 0, 10_000_000, 20_000, 1, &c, &ctx);
+    let price = price_bps(&m);
+    let yes = m.liability_yes;
+    let debt = m.debt;
+    let shares = a.positions[0].shares;
+    let vault = m.vault.value();
+    add_liquidity(&r, &mut m, coin::mint_for_testing<KUSD>(4_000_000_000, &mut ctx), &c, &ctx);
+    assert!(price_bps(&m) == price && m.seed == 5_000_000_000);
+    assert!(m.vault.value() == vault + 4_000_000_000);
+    assert!(m.liability_yes == yes && m.debt == debt && a.positions[0].shares == shares);
+    close_position(&mut a, &mut m, 0, BPS, 1, &c, &ctx);
+    assert!(a.positions.is_empty() && m.debt == 0 && m.liability_yes == 0);
+    test_cleanup(r, a, m, c);
+}
+#[test, expected_failure(abort_code = EOwner)]
+fun unauthorized_liquidity_fails() {
+    let mut ctx = sui::tx_context::dummy();
+    let (mut r, a, mut m, c) = test_setup(&mut ctx);
+    r.admin = @0x123;
+    add_liquidity(&r, &mut m, coin::mint_for_testing<KUSD>(1_000_000, &mut ctx), &c, &ctx);
+    test_cleanup(r, a, m, c);
+}
+#[test, expected_failure(abort_code = EState)]
+fun closed_market_liquidity_fails() {
+    let mut ctx = sui::tx_context::dummy();
+    let (r, a, mut m, mut c) = test_setup(&mut ctx);
+    c.increment_for_testing(2 * TIMEOUT_MS);
+    add_liquidity(&r, &mut m, coin::mint_for_testing<KUSD>(1_000_000, &mut ctx), &c, &ctx);
+    test_cleanup(r, a, m, c);
+}
+#[test, expected_failure(abort_code = EOwner)]
+fun mismatched_registry_liquidity_fails() {
+    let mut ctx = sui::tx_context::dummy();
+    let (r, a, mut m, c) = test_setup(&mut ctx);
+    m.registry = object::id_from_address(@0x123);
+    add_liquidity(&r, &mut m, coin::mint_for_testing<KUSD>(1_000_000, &mut ctx), &c, &ctx);
     test_cleanup(r, a, m, c);
 }
 #[test]

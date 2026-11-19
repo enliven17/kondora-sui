@@ -69,6 +69,12 @@ transactions and all backend writes are internal Convex functions.
 
 ## Verification receipts
 
+`deployments/upgrade-testnet.json` records the compatible v2 upgrade adding
+admin-only permanent liquidity top-ups. Existing registry, faucet, account,
+market IDs and kUSD type origins are unchanged. Regular trading continues
+against the original package; the admin liquidity script calls the v2 package.
+`deployments/liquidity-testnet.json` records the actual funding transactions.
+
 `deployments/smoke-testnet.json` records real mint, funding, trading, withdrawal,
 proposal, finalization and claim transactions. The proposal waits the actual
 five-minute dispute period. A simulated stranger withdrawal is required to fail.
@@ -79,6 +85,6 @@ withdrawal and no execution/invariant failures. Seven transport retries were
 needed. This is a functional validation, not a completed long-duration soak or
 a throughput result. Earlier interruptions remain in local `.soak/` logs.
 
-The ten Move unit tests, seven TypeScript tests, typecheck, lint and production
+The fourteen Move unit tests, seven TypeScript tests, typecheck, lint and production
 build are the reproducible local checks. The package has not received an
 independent security audit.

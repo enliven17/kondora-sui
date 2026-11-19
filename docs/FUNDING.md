@@ -11,6 +11,17 @@ free by the testnet faucet; it does not need to be bought or sent manually.
 | Auditor | `0xa8be7faf34749de75e5f22a4637b787cb51b6e5549cf34dbfce881f9c9f39320` |
 
 Use https://faucet.sui.io/?network=testnet or an already funded testnet wallet.
+The official [automation guide](https://faucet.sui.io/how-to-use/) supports direct
+V3 proof-of-work requests. The CLI already uses `requestSuiFromFaucetV3` from the
+Sui SDK; V2 is not used for the public faucet. For the creator, run:
+
+```powershell
+$env:SUI_KEY_FILE = '.keys/sui-deployer.key'
+npm run agent -- faucet
+Remove-Item Env:SUI_KEY_FILE
+```
+
+Faucet proof computation can take time or expire; it is not guaranteed funding.
 Initial gas was supplied for deployment and validation. Keep the creator funded
 for new markets and soak wallet funding, the oracle for proposals/finalization,
 and the auditor for challenges. The deployer's UpgradeCap remains local.
@@ -35,3 +46,19 @@ Server settings: `SUI_MAX_OPEN_MARKETS=6`, `SUI_MAX_NEW_MARKETS=1`,
 `SUI_ENABLE_LLM=0`. Optional council/model mode requires explicitly changing the
 last value to `1`. If legacy council markets are present while model mode is
 off, their permissionless 24-hour INVALID timeout remains available.
+
+## Market liquidity
+
+The compatible v2 package adds admin-only permanent house liquidity to open
+markets. It preserves the existing object IDs, collateral type, shares and debt,
+and scales both reserves proportionally. Public markets now have a 5,000 kUSD
+seed and the prepared 200-wallet soak pool has 10,000 kUSD. The 12 top-up
+transactions added 59,000 valueless kUSD in total; receipts are in
+`deployments/liquidity-testnet.json`. No extra markets were opened.
+
+Future creator runs use `SUI_MARKET_SEED_KUSD=5000`. To idempotently top up existing
+open markets to those targets, use:
+
+```sh
+npm run sui:liquidity -- --soak-dir .soak/sui-2026-11-19T11-48-43-207Z
+```

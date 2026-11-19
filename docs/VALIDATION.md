@@ -2,8 +2,11 @@
 
 Validated on 2026-11-19 against the package in `deployments/testnet.json`.
 
-- Ten Move unit tests passed, including ownership rejection, oracle authority,
+- Fourteen Move unit tests passed, including ownership rejection, oracle authority,
   slippage rejection, reserve limits, interest, partial close, disputes and claims.
+  Liquidity tests cover preserved prices and claims, wrong admin, wrong registry,
+  and rejection after the close. The compatible v2 upgrade passed an on-chain
+  simulation before being signed and executed.
 - Seven TypeScript tests passed, including 2,000 varied buy/sell rounding checks,
   BCS rejection, leverage/reserve caps, configured-package transaction targets
   and the absence of public Convex write functions.
@@ -13,6 +16,10 @@ Validated on 2026-11-19 against the package in `deployments/testnet.json`.
 - The successful short resumed soak exercised two wallets and ten accounting
   checks with no execution/invariant failures. It needed seven transport retries.
   Long-duration soaking remains a user-run operation; see `docs/SOAK.md`.
+- All 200 prepared wallets were checked against their local keys and on-chain
+  accounts, gas and kUSD balances. They hold 20,000 kUSD in accounts and 180,000
+  kUSD outside accounts. The dedicated pool has 10,000 kUSD liquidity. Public
+  receipts record preparation and funding; no long 200-wallet run is claimed.
 - The Sui wallet selection dialog and live market list were inspected in the
   browser. Browser signing with a user wallet was not automated; CLI signatures
   were used for the recorded chain tests.

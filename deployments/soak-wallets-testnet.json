@@ -1,0 +1,20 @@
+{
+  "network": "sui:testnet",
+  "verifiedAt": "2026-11-19T11:58:57.313Z",
+  "walletCount": 200,
+  "uniqueKeysVerified": true,
+  "accountsVerified": 200,
+  "minimumGasSui": 0.012792765,
+  "totalWalletGasSui": 2.558553,
+  "totalTradingKusd": 20000,
+  "totalFreeKusd": 180000,
+  "runDirectory": ".soak/sui-2026-11-19T11-48-43-207Z",
+  "keyDirectory": ".keys/soak-2026-11-19T11-48-43-207Z",
+  "marketId": "0x58239b34baeb47ac73b2659b8983fbc716aa643efa46d36d7bfaf1859d9f5062",
+  "preparedOnly": true,
+  "longSoakCompleted": false,
+  "marketSeedKusd": 10000,
+  "totalCollateralKusd": 210000,
+  "collateralConserved": true,
+  "unauthorizedLiquidityRejected": true
+}

@@ -16,6 +16,9 @@ of gas for any duration. Get testnet SUI from the official faucet.
 
 The runner creates a dedicated market, saves generated keys under `.keys/`, mints
 kUSD and deposits 100 kUSD per wallet. It never reads original Solana keys.
+Small runs use 500 kUSD pool seed; runs above 20 wallets default to 10,000 kUSD.
+Override with `--seed-kusd`. Conservation uses the market's actual funded seed,
+so a house liquidity top-up before resuming is included in the baseline.
 
 ## Commands
 
@@ -104,3 +107,22 @@ If trading has ended, wait for resolution and use `claim`. The smoke test's
 `--settlement` mode separately verifies proposal, the real five-minute dispute
 window, finalization and claim. An interrupted settlement smoke can resume with
 `npm run sui:smoke -- --resume` using its saved evidence bundle.
+
+## Prepared 200-wallet set
+
+The set `.soak/sui-2026-11-19T11-48-43-207Z` was prepared on 2026-11-19.
+All 200 private keys match unique public addresses. On-chain verification found
+200 accounts holding 100 kUSD each, 900 kUSD in each wallet and at least
+0.012792765 SUI gas after setup. Each wallet initially received 0.02 SUI.
+The dedicated market now has a 10,000 kUSD seed. The public verification receipt
+is `deployments/soak-wallets-testnet.json`. This is preparation, not a completed
+200-wallet trading soak.
+
+Run the already prepared set without generating or funding 200 new wallets:
+
+```sh
+npm run sui:soak -- --wallets 200 --minutes 30 --resume .soak/sui-2026-11-19T11-48-43-207Z
+```
+
+Keep the private key directory on this machine. The manifest and reports contain
+public data only; neither local keys nor run output are pushed to GitHub.

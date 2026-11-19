@@ -22,7 +22,9 @@
     "sui:deploy": "tsx scripts/sui-deploy.ts",
     "sui:smoke": "tsx scripts/sui-smoke.ts",
     "agent": "tsx cli/kondora-agent.ts",
-    "sui:soak": "tsx scripts/soak-sui.ts"
+    "sui:soak": "tsx scripts/soak-sui.ts",
+    "sui:upgrade": "tsx scripts/sui-upgrade.ts",
+    "sui:liquidity": "tsx scripts/liquidity-sui.ts"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

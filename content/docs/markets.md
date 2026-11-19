@@ -15,7 +15,7 @@ Each market stores its question, summary, category, rules, close time and resolu
 
 ## Initial liquidity
 
-The testnet creator mints freely available kUSD and funds each market with a demonstration seed. Initial price and reserve allocation are fixed when the market is created. This is test liquidity, not real dollars.
+The testnet creator mints freely available kUSD and seeds new public markets with 5,000 kUSD by default. The registry admin can permanently add house liquidity to an open market through the compatible v2 package. Both reserves scale together to preserve the current probability, while existing shares and debt remain unchanged. Added liquidity increases the funded seed and borrowing capacity. There are no redeemable LP tokens or house withdrawals. This is test liquidity, not real dollars.
 
 ## Categories and availability
 

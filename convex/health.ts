@@ -7,5 +7,6 @@ export const check = internalAction({ args: {}, handler: async () => ({
   llmEnabled: process.env.SUI_ENABLE_LLM === "1",
   maxOpenMarkets: Number(process.env.SUI_MAX_OPEN_MARKETS) || 6,
   maxNewMarketsPerRun: Number(process.env.SUI_MAX_NEW_MARKETS) || 1,
+  marketSeedKusd: Number(process.env.SUI_MARKET_SEED_KUSD) || 5000,
   roles: Object.fromEntries((["CREATOR", "ORACLE", "AUDITOR", "CRANK"] as const).map((r) => [r, roleKey(r)?.toSuiAddress() ?? "not configured"])),
 }) });

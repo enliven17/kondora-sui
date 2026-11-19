@@ -3,9 +3,10 @@ import { bcs } from "@mysten/sui/bcs";
 import { CLOCK_ID, COIN_TYPE, FAUCET_ID, PACKAGE_ID, REGISTRY_ID, requireDeployment } from "./config";
 export const target = (name: string) => `${PACKAGE_ID}::market::${name}` as `${string}::${string}::${string}`;
 export const newTransaction = () => { requireDeployment(); return new Transaction(); };
-export function mintTransaction() {
+export function mintTransaction(count = 1) {
+  if (!Number.isInteger(count) || count < 1 || count > 50) throw new Error("Mint count must be 1..50");
   const tx = newTransaction();
-  tx.moveCall({ target: `${PACKAGE_ID}::kusd::mint`, arguments: [tx.object(FAUCET_ID)] });
+  for (let i = 0; i < count; i++) tx.moveCall({ target: `${PACKAGE_ID}::kusd::mint`, arguments: [tx.object(FAUCET_ID)] });
   return tx;
 }
 export function setupTransaction(owner: string, accountId: string | null, deposit: bigint) {

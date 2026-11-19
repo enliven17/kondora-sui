@@ -1,0 +1,125 @@
+{
+  "network": "sui:testnet",
+  "entries": [
+    {
+      "marketId": "0x1edda61e4081ad1ab24a6b0d0efc3f471b686c4385794d6e8c7ebd8f1f41b772",
+      "question": "Will BTC be above $65,000 on Nov 20, 00:00 UTC?",
+      "beforeSeed": "500000000",
+      "added": "4500000000",
+      "seed": "5000000000",
+      "vault": "5000000000",
+      "digest": "HR8zseRTj2o2qyV9bgdxppEyut1XE4x6Vads4NJkiqkq",
+      "at": "2026-11-19T11:57:15.362Z"
+    },
+    {
+      "marketId": "0x9bbff3363b3c2d5e181a3cbeb9ce2f10ca40d36845c9905eff8039e641fd06ca",
+      "question": "Will BTC be above $62,000 on Nov 20, 00:00 UTC?",
+      "beforeSeed": "500000000",
+      "added": "4500000000",
+      "seed": "5000000000",
+      "vault": "5000000000",
+      "digest": "FCdXWLczZTaPtMh5wWuxoFg1gDmKQ4NSRuFAvTxbw6o6",
+      "at": "2026-11-19T11:57:17.127Z"
+    },
+    {
+      "marketId": "0xa8dc6adb28818f4a31d674567cbebedef68bb2663aef5c087da9d88ef58a2478",
+      "question": "Will BTC be above $69,000 on Nov 26, 00:00 UTC?",
+      "beforeSeed": "500000000",
+      "added": "4500000000",
+      "seed": "5000000000",
+      "vault": "5000000000",
+      "digest": "G1LB6gLnAacfAz5DiF4Z7HYhsQYJnXrFmCChwPUbdosF",
+      "at": "2026-11-19T11:57:18.472Z"
+    },
+    {
+      "marketId": "0x464444b082489694fa21b9d55ea3af475b4492818088aaa0d98a23df7e8baf9e",
+      "question": "Will BTC be above $59,000 on Nov 26, 00:00 UTC?",
+      "beforeSeed": "500000000",
+      "added": "4500000000",
+      "seed": "5000000000",
+      "vault": "5000000000",
+      "digest": "8q7R8EouposeyDZLL8qx87BCLxnyg5SyQkXtDptsw198",
+      "at": "2026-11-19T11:57:20.130Z"
+    },
+    {
+      "marketId": "0x9021183b66d85df3f44ccb7ff0aee967349777c94cda745981ddb010e8b87b04",
+      "question": "Will ETH be above $1,850 on Nov 20, 00:00 UTC?",
+      "beforeSeed": "500000000",
+      "added": "4500000000",
+      "seed": "5000000000",
+      "vault": "5000000000",
+      "digest": "YBhTCmGK6Fhm8zCqbpsUNpgxwaCMsTvigr1Doavy7sW",
+      "at": "2026-11-19T11:57:21.756Z"
+    },
+    {
+      "marketId": "0x426708ef9e3251c00bd0ba8f315459a512e2282b55826d0e1eafc856f5f0861f",
+      "question": "Will ETH be above $1,750 on Nov 20, 00:00 UTC?",
+      "beforeSeed": "500000000",
+      "added": "4500000000",
+      "seed": "5000000000",
+      "vault": "5000000000",
+      "digest": "7L2fZXBvTZZvYK3Vcqaau8BMgMyf9M3Y1H7QauAnyJyC",
+      "at": "2026-11-19T11:57:23.513Z"
+    },
+    {
+      "marketId": "0x36c9d7dc81833247290abe58311313095b336b8b532fedf036d6d3446d7e3701",
+      "question": "Will ETH be above $1,950 on Nov 26, 00:00 UTC?",
+      "beforeSeed": "500000000",
+      "added": "4500000000",
+      "seed": "5000000000",
+      "vault": "5000000000",
+      "digest": "93ZuM5ctzQyRjsu1Ze9sG2aNQ68D5o63cdkT9EHMadzq",
+      "at": "2026-11-19T11:57:25.076Z"
+    },
+    {
+      "marketId": "0xa8bfc7ea8ccd3d9c164697095f8bc60299d7d2e40c07144e5d7042b67ea62c12",
+      "question": "Will ETH be above $1,650 on Nov 26, 00:00 UTC?",
+      "beforeSeed": "500000000",
+      "added": "4500000000",
+      "seed": "5000000000",
+      "vault": "5000000000",
+      "digest": "BcZmZDzGyLEJnGKZ85iSR1mGZLENgz27nqop96qhDEjm",
+      "at": "2026-11-19T11:57:26.700Z"
+    },
+    {
+      "marketId": "0xb6d38aefa28f06be1cdb37f88d4e48146d0ad00278ff7617185af97c9055722e",
+      "question": "Will Carlos Alcaraz win the 2026 Nitto ATP Finals?",
+      "beforeSeed": "500000000",
+      "added": "4500000000",
+      "seed": "5000000000",
+      "vault": "5000000000",
+      "digest": "AcJu3Pk85QkyEurpnZGjhTsSUHwGZeSxTwksTnbeFid3",
+      "at": "2026-11-19T11:57:28.348Z"
+    },
+    {
+      "marketId": "0x38a7f3f37e0788a7f865587b9b89eb75042e4cf8e0b6bcb886104edaa1b49a8d",
+      "question": "Will BNB be above $600 on Nov 20, 00:00 UTC?",
+      "beforeSeed": "500000000",
+      "added": "4500000000",
+      "seed": "5000000000",
+      "vault": "5000000000",
+      "digest": "EXLdKmRob6WLKHfdMC3s3uuBQcyxSfEFWBirw2DZqjs9",
+      "at": "2026-11-19T11:57:30.016Z"
+    },
+    {
+      "marketId": "0x12a49194e91d54a3db14bae3ce562589df8dda36346000fbbfff51be04f23e5a",
+      "question": "Will Chiang Wan-an win the next Taipei Mayor election?",
+      "beforeSeed": "500000000",
+      "added": "4500000000",
+      "seed": "5000000000",
+      "vault": "5000000000",
+      "digest": "H7Jyb9wES3VtqiDGFhnxjasNccCXYS2RSSsQjbcbHW2t",
+      "at": "2026-11-19T11:57:31.617Z"
+    },
+    {
+      "marketId": "0x58239b34baeb47ac73b2659b8983fbc716aa643efa46d36d7bfaf1859d9f5062",
+      "question": "Will Sui soak run 2026-11-19T11-48 complete its checks?",
+      "beforeSeed": "500000000",
+      "added": "9500000000",
+      "seed": "10000000000",
+      "vault": "10000000000",
+      "digest": "2MfFqiyi4jiyNQwusJ8QoW8RGcBhudBMPHLtGGpBVhGs",
+      "at": "2026-11-19T11:57:33.024Z"
+    }
+  ]
+}

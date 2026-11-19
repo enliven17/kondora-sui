@@ -34,9 +34,10 @@ export const run = internalAction({ args: {}, handler: async (ctx) => {
         .slice(0, maxNew);
     let created = 0;
     for (const c of candidates) {
-      await send(mintTransaction(), key);
+      const seedKusd = Math.max(100, Math.min(50000, Math.floor(Number(process.env.SUI_MARKET_SEED_KUSD) || 5000)));
+      await send(mintTransaction(Math.ceil(seedKusd / 1000)), key);
       await send(createMarketTransaction({ question: c.question, summary: c.summary, category: c.category,
-        rules: c.rules, closeMs: c.closeTime * 1000, initialPriceBps: Math.max(500, Math.min(9500, Math.round(c.priceYes * 10000))), seed: 500_000_000n,
+        rules: c.rules, closeMs: c.closeTime * 1000, initialPriceBps: Math.max(500, Math.min(9500, Math.round(c.priceYes * 10000))), seed: BigInt(seedKusd) * 1_000_000n,
         resolution: JSON.stringify({ spec: c.resolution, sourceName: c.sourceName, sourceUrl: c.sourceUrl, key: c.dedupeKey, tags: c.tags ?? [] }),
       }), key);
       created++;

@@ -22,6 +22,7 @@ const walletCount = Math.floor(option("--wallets", 4, 1, 200));
 const gasPerWallet = BigInt(Math.round(option("--gas-per-wallet", walletCount > 20 ? 0.02 : 0.15, 0.01, 10) * 1e9));
 const setupConcurrency = Math.floor(option("--setup-concurrency", 2, 1, 8));
 const prepareOnly = process.argv.includes("--prepare-only");
+const seed = BigInt(Math.round(option("--seed-kusd", walletCount > 20 ? 10000 : 500, 100, 50000) * 1e6));
 const interval = option("--interval-ms", 2500, 0, 60000);
 const maxRounds = option("--rounds", Number.MAX_SAFE_INTEGER, 1, Number.MAX_SAFE_INTEGER);
 const resumeIndex = process.argv.indexOf("--resume");
@@ -90,11 +91,11 @@ try {
   const donorGas = BigInt((await retryRead(() => sui.getBalance({ owner: donor.toSuiAddress() }))).balance.balance);
   assert(donorGas > 100_000_000n, "Deployer needs at least 0.1 test SUI reserve.");
   if (!report.marketId) {
-  await send("mint-seed", mintTransaction());
+  await send("mint-seed", mintTransaction(Number((seed + 999_999_999n) / 1_000_000_000n)));
   await send("create-soak-market", createMarketTransaction({ question: `Will Sui soak run ${run.slice(0, 16)} complete its checks?`,
     summary: "Automated testnet stress scenario. Not a real-world prediction.", category: "tech", rules: ["Testnet scenario; evidence is the local soak report."],
     resolution: JSON.stringify({ key: `soak-${run}`, tags: ["soak"], sourceName: "Soak runner", sourceUrl: "https://github.com/enliven17/kondora-sui" }),
-    closeMs: Date.now() + Math.max(2 * 86400000, Math.ceil(minutes + 20) * 60000), initialPriceBps: 5000, seed: 500_000_000n,
+    closeMs: Date.now() + Math.max(2 * 86400000, Math.ceil(minutes + 20) * 60000), initialPriceBps: 5000, seed,
   }));
   const created = (await retryRead(() => readAllMarkets())).find(m => {
     try { return JSON.parse(m.resolution).key === `soak-${run}`; } catch { return false; }
@@ -142,7 +143,7 @@ try {
   if (prepareOnly) { console.log("Wallet preparation complete; trading has not started."); }
   else {
   const deadline = Date.now() + minutes * 60000;
-  const baseline = 500_000_000n + BigInt(walletCount) * 1_000_000_000n;
+  const baseline = BigInt((await readSuiMarket(report.marketId)).seed) + BigInt(walletCount) * 1_000_000_000n;
   while (!interrupted && Date.now() < deadline && report.rounds < maxRounds) {
     for (const [index, key] of wallets.entries()) {
       if (interrupted) break;

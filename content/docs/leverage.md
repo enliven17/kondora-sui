@@ -11,7 +11,7 @@ Notional equals margin times leverage. Debt is notional minus margin. Leverage c
 
 ## Risk limits
 
-The cap decreases through the final 24 hours and reaches 1x in the final hour. It also tightens near prices of zero and one. Total outstanding debt cannot exceed half the market's initial seed.
+The cap decreases through the final 24 hours and reaches 1x in the final hour. It also tightens near prices of zero and one. Total outstanding debt cannot exceed half the market's funded seed, including permanent house liquidity added by the admin.
 
 ## Full outcome reserves
 
