@@ -106,8 +106,9 @@ npm run sui:soak -- --wallets 200 --prepare-only
 
 The smoke test exercises real testnet mint, deposit, opening, partial closing,
 withdrawal, unauthorized-withdrawal rejection, proposal, finalization and claim.
-The soak checks collateral conservation, debt, outcome liabilities and full vault
-reserves while alternating sides and leverage. Read [docs/SOAK.md](docs/SOAK.md)
+The soak spreads wallets across existing public markets, rotates markets and
+sides, and checks wallet cash, debt, outcome liabilities and full vault reserves.
+Use `--isolated` for a dedicated single-pool conservation test. Read [docs/SOAK.md](docs/SOAK.md)
 before a long run. Public testnet endpoints can fail; results and digests remain
 in `.soak/`, and generated wallets remain in `.keys/`.
 

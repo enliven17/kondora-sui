@@ -8,7 +8,9 @@ import { readAccount as chainReadAccount } from "../lib/account";
 import { poolOf } from "../lib/chain";
 import { amm } from "../lib/kondora";
 import { sui } from "../lib/sui/client";
-import { CLOCK_ID, REGISTRY_ID } from "../lib/sui/config";
+import { CLOCK_ID, PACKAGE_ID, REGISTRY_ID } from "../lib/sui/config";
+import { TradeEventBCS } from "../lib/sui/schema";
+import { checkMarketAccounting, selectSoakMarkets, soakAssignment } from "./soak-model";
 import { readAllMarkets, readSuiMarket as chainReadMarket, toMarketAccount } from "../lib/sui/read";
 import { createMarketTransaction, mintTransaction, newTransaction, setupTransaction, target } from "../lib/sui/transactions";
 
@@ -22,6 +24,12 @@ const walletCount = Math.floor(option("--wallets", 4, 1, 200));
 const gasPerWallet = BigInt(Math.round(option("--gas-per-wallet", walletCount > 20 ? 0.02 : 0.15, 0.01, 10) * 1e9));
 const setupConcurrency = Math.floor(option("--setup-concurrency", 2, 1, 8));
 const prepareOnly = process.argv.includes("--prepare-only");
+const isolated = process.argv.includes("--isolated");
+const marketLimit = Math.floor(option("--market-limit", 50, 1, 50));
+const marketIndex = process.argv.indexOf("--markets");
+const explicitMarkets = marketIndex < 0 ? [] : [...new Set((process.argv[marketIndex + 1] ?? "").toLowerCase().split(","))];
+if (explicitMarkets.some(id => !/^0x[0-9a-f]{64}$/i.test(id))) throw new Error("--markets requires comma-separated Sui object IDs");
+if (isolated && explicitMarkets.length) throw new Error("Choose --isolated or --markets");
 const seed = BigInt(Math.round(option("--seed-kusd", walletCount > 20 ? 10000 : 500, 100, 50000) * 1e6));
 const interval = option("--interval-ms", 2500, 0, 60000);
 const maxRounds = option("--rounds", Number.MAX_SAFE_INTEGER, 1, Number.MAX_SAFE_INTEGER);
@@ -38,17 +46,29 @@ const wallets = Array.from({ length: walletCount }, (_, i) => {
   if (resumeDir) return Ed25519Keypair.fromSecretKey(fs.readFileSync(file, "utf8").trim());
   const key = Ed25519Keypair.generate(); fs.writeFileSync(file, key.getSecretKey(), { mode: 0o600 }); return key;
 });
-const report = { network: "sui:testnet", startedAt: new Date().toISOString(), completedAt: "", minutes, walletCount, gasPerWallet: String(gasPerWallet), preparedWallets: 0, preparedOnly: prepareOnly, marketId: "", rounds: 0, transactions: 0, failures: 0, networkRetries: 0, checks: 0, rejectedAttacks: 0, stopped: false, gasMist: "0", errors: [] as string[], latencies: [] as number[] };
+type MarketActivity = { opens: number; closes: number; claims: number; notionalKusd: number };
+const report = { network: "sui:testnet", startedAt: new Date().toISOString(), completedAt: "", minutes, walletCount, mode: isolated ? "isolated" : "public-markets", gasPerWallet: String(gasPerWallet), preparedWallets: 0, preparedOnly: prepareOnly, marketId: "", isolatedMarketId: "", marketIds: [] as string[], marketActivity: {} as Record<string,MarketActivity>, expectedWalletKusd: "", rounds: 0, transactions: 0, failures: 0, networkRetries: 0, checks: 0, rejectedAttacks: 0, stopped: false, gasMist: "0", errors: [] as string[], latencies: [] as number[] };
 const summaryFile = path.join(outDir, "summary.json");
 if (resumeDir) {
   const previous = JSON.parse(fs.readFileSync(summaryFile, "utf8"));
   assert.equal(previous.walletCount, walletCount, "Resume requires the original wallet count");
   report.marketId = previous.marketId;
+  report.isolatedMarketId = previous.isolatedMarketId ?? (previous.marketIds ? "" : previous.marketId);
 }
 const manifest = wallets.map((key, index) => ({ index, address: key.toSuiAddress() }));
 fs.writeFileSync(path.join(outDir, "wallets.json"), JSON.stringify(manifest, null, 2));
 const checkpoint = () => fs.writeFileSync(summaryFile, JSON.stringify(report, null, 2));
+const lockFile = path.join(outDir, "runner.lock");
+if (fs.existsSync(lockFile)) {
+  const pid = Number(fs.readFileSync(lockFile,"utf8"));
+  let alive = false; try { process.kill(pid,0); alive = true; } catch { /* stale process */ }
+  if (alive) throw new Error(`This wallet set is already in use by PID ${pid}. Stop that Sui runner before resuming.`);
+  fs.unlinkSync(lockFile);
+}
+fs.writeFileSync(lockFile,String(process.pid),{flag:"wx"});
 checkpoint();
+const walletOwners = new Set(wallets.map(key=>key.toSuiAddress()));
+let expectedWalletCash: bigint | null = null;
 async function mapLimited<T, R>(items: T[], concurrency: number, fn: (item: T, index: number) => Promise<R>): Promise<R[]> {
   const results: R[] = new Array(items.length);
   let next = 0, failure: unknown;
@@ -66,7 +86,7 @@ async function retryRead<T>(fn: () => Promise<T>): Promise<T> {
   for (let attempt = 0; ; attempt++) {
     try { return await fn(); }
     catch (error) {
-      if (attempt >= 5 || !/fetch failed|network|timeout|ECONN|unavailable|DEADLINE|429|too many requests|rate.?limit|resource.exhausted/i.test(String(error))) throw error;
+      if (attempt >= 5 || !/fetch failed|network|timeout|ECONN|ENOTFOUND|EAI_AGAIN|unavailable|DEADLINE|429|too many requests|rate.?limit|resource.exhausted/i.test(String(error))) throw error;
       report.networkRetries++; console.log(`Read transport retry ${attempt + 1}/5`);
       await new Promise((resolve) => setTimeout(resolve, 3000 * (attempt + 1)));
     }
@@ -84,13 +104,22 @@ async function send(action: string, tx: Transaction, key = donor) {
   report.transactions++; report.latencies.push(latencyMs);
   const gas = result.effects?.gasUsed;
   if (gas) report.gasMist = String(BigInt(report.gasMist) + BigInt(gas.computationCost) + BigInt(gas.storageCost) - BigInt(gas.storageRebate));
-  log({ action, owner: key.toSuiAddress(), digest: result.digest, latencyMs });
-  console.log(`${action}: ${result.digest} (${latencyMs}ms)`);
+  const events = (result.events ?? []).filter(e=>e.eventType===`${PACKAGE_ID}::market::TradeEvent`).map(e=>TradeEventBCS.parse(e.bcs));
+  for (const e of events) {
+    if (expectedWalletCash !== null && walletOwners.has(e.owner)) expectedWalletCash += e.kind === 0 ? -BigInt(e.margin) : BigInt(e.margin);
+    const activity = report.marketActivity[e.market_id] ??= {opens:0,closes:0,claims:0,notionalKusd:0};
+    if(e.kind===0){activity.opens++;activity.notionalKusd+=Number(e.margin)*Number(e.leverage_bps)/10000/1e6;}
+    else if(e.kind===3)activity.claims++;else activity.closes++;
+  }
+  const marketIds = [...new Set(events.map(e=>e.market_id))];
+  if(expectedWalletCash!==null)report.expectedWalletKusd=String(expectedWalletCash);
+  log({ action, owner: key.toSuiAddress(), marketIds, digest: result.digest, latencyMs });
+  console.log(`${action}${marketIds.length?` [${marketIds.map(id=>id.slice(0,10)).join(",")}]`:""}: ${result.digest} (${latencyMs}ms)`);
 }
 try {
   const donorGas = BigInt((await retryRead(() => sui.getBalance({ owner: donor.toSuiAddress() }))).balance.balance);
   assert(donorGas > 100_000_000n, "Deployer needs at least 0.1 test SUI reserve.");
-  if (!report.marketId) {
+  if (isolated && !report.isolatedMarketId) {
   await send("mint-seed", mintTransaction(Number((seed + 999_999_999n) / 1_000_000_000n)));
   await send("create-soak-market", createMarketTransaction({ question: `Will Sui soak run ${run.slice(0, 16)} complete its checks?`,
     summary: "Automated testnet stress scenario. Not a real-world prediction.", category: "tech", rules: ["Testnet scenario; evidence is the local soak report."],
@@ -102,9 +131,20 @@ try {
   });
   assert(created, "Created soak market was not indexed by the RPC");
   report.marketId = created.id;
+  report.isolatedMarketId = created.id;
   checkpoint();
   }
-  console.log(`Market ${report.marketId}; preparing ${walletCount} wallets`);
+  const chooseMarkets = async () => {
+    const all = await retryRead(()=>readAllMarkets());
+    const selected = selectSoakMarkets(all,Date.now(),isolated?[report.isolatedMarketId]:explicitMarkets,marketLimit);
+    assert(selected.length,"No open markets available for this soak. Pick open object IDs with --markets or use --isolated.");
+    report.marketIds=selected.map(m=>m.id);report.marketId=report.marketIds[0];
+    return selected;
+  };
+  const selected = await chooseMarkets();
+  console.log(`Selected ${selected.length} ${isolated?"isolated":"existing"} markets; preparing ${walletCount} wallets`);
+  for(const market of selected)console.log(`  ${market.id} ${market.question}`);
+  checkpoint();
   const balances = await mapLimited(wallets, setupConcurrency, key => retryRead(() => sui.getBalance({ owner: key.toSuiAddress() })));
   const funding = wallets.flatMap((key, i) => {
     const balance = BigInt(balances[i].balance.balance);
@@ -143,45 +183,81 @@ try {
   if (prepareOnly) { console.log("Wallet preparation complete; trading has not started."); }
   else {
   const deadline = Date.now() + minutes * 60000;
-  const baseline = BigInt((await readSuiMarket(report.marketId)).seed) + BigInt(walletCount) * 1_000_000_000n;
+  const accountSnapshots = () => mapLimited(wallets,setupConcurrency,key=>readAccount(key.toSuiAddress()));
+  const cashOf = (snapshots: Awaited<ReturnType<typeof accountSnapshots>>) => snapshots.reduce((sum,a)=>sum+a.usdc+(a.user?.balance??0n),0n);
+  const initialSnapshots = await accountSnapshots();
+  expectedWalletCash = cashOf(initialSnapshots);
+  report.expectedWalletKusd = String(expectedWalletCash);
+  if(isolated)assert(initialSnapshots.every(a=>a.user!.positions.every(p=>p.market_id===report.isolatedMarketId)),"Isolated mode requires wallets without positions in other markets. Resume without --isolated to recover them.");
+  const isolatedBaseline = isolated ? expectedWalletCash + BigInt((await readSuiMarket(report.isolatedMarketId)).vault) : null;
+  const verifyAccounting = async () => {
+    let snapshots = await accountSnapshots();
+    for(let attempt=0;cashOf(snapshots)!==expectedWalletCash&&attempt<3;attempt++){
+      await new Promise(resolve=>setTimeout(resolve,1500*(attempt+1)));snapshots=await accountSnapshots();
+    }
+    assert.equal(cashOf(snapshots),expectedWalletCash,"Wallet cash differs from signed transaction events; check for another runner or external wallet transfers");
+    report.checks++;
+    const ownByMarket = new Map<string,{yes:bigint;no:bigint;debt:bigint}>();
+    for(const account of snapshots)for(const p of account.user!.positions){
+      const own=ownByMarket.get(p.market_id)??{yes:0n,no:0n,debt:0n};
+      if(p.side===0)own.yes+=p.shares;else own.no+=p.shares;own.debt+=p.debt;ownByMarket.set(p.market_id,own);
+    }
+    const markets=await retryRead(()=>readAllMarkets());
+    const watched=new Set([...report.marketIds,...Object.keys(report.marketActivity),...ownByMarket.keys()]);
+    for(const id of watched){
+      const market=markets.find(m=>m.id===id);assert(market,`Missing market ${id}`);
+      checkMarketAccounting(market,ownByMarket.get(id)??{yes:0n,no:0n,debt:0n},isolated&&id===report.isolatedMarketId);
+      report.checks+=4;
+    }
+    if(isolated){
+      const market=markets.find(m=>m.id===report.isolatedMarketId)!;
+      assert.equal(cashOf(snapshots)+BigInt(market.vault),isolatedBaseline,"Isolated collateral conservation failed");report.checks++;
+    }
+  };
+  await verifyAccounting();
   while (!interrupted && Date.now() < deadline && report.rounds < maxRounds) {
+    const liveCandidates = await chooseMarkets();
     for (const [index, key] of wallets.entries()) {
       if (interrupted) break;
       const snap = await readAccount(key.toSuiAddress());
       assert(snap.id && snap.user);
-      const positions = snap.user.positions.filter((p) => p.market_id === report.marketId);
-      if (positions.length) {
-        for (const p of positions) {
-          const tx = newTransaction();
-          tx.moveCall({ target: target("close_position"), arguments: [tx.object(snap.id), tx.object(report.marketId), tx.pure.u8(p.side), tx.pure.u64(10000), tx.pure.u64(0), tx.object(CLOCK_ID)] });
-          await send("close", tx, key);
+      let unwound = false;
+      for (const id of new Set(snap.user.positions.map(p=>p.market_id))) {
+        const market = await readSuiMarket(id);
+        if(market.state===4){
+          const tx=newTransaction();tx.moveCall({target:target("claim"),arguments:[tx.object(snap.id),tx.object(id),tx.object(CLOCK_ID)]});
+          await send("claim",tx,key);unwound=true;continue;
         }
-      } else {
-        const market = toMarketAccount(await readSuiMarket(report.marketId));
-        const pool = poolOf(market), side = ((report.rounds + index) % 2) as amm.Side;
+        if(market.state!==0||Number(market.close_ms)<=Date.now()){log({action:"awaiting-settlement",owner:key.toSuiAddress(),marketId:id});continue;}
+        for(const p of snap.user.positions.filter(p=>p.market_id===id)){
+          const tx = newTransaction();
+          tx.moveCall({ target: target("close_position"), arguments: [tx.object(snap.id), tx.object(id), tx.pure.u8(p.side), tx.pure.u64(10000), tx.pure.u64(0), tx.object(CLOCK_ID)] });
+          await send("close", tx, key);unwound=true;
+        }
+      }
+      if(unwound)continue;
+      const assignment = soakAssignment(index,report.rounds,liveCandidates.length);
+      for(let offset=0;offset<liveCandidates.length;offset++){
+        const selected=liveCandidates[(assignment.marketIndex+offset)%liveCandidates.length];
+        if(snap.user.positions.some(p=>p.market_id===selected.id))continue;
+        const current=await readSuiMarket(selected.id);
+        if(current.state!==0||Number(current.close_ms)<=Date.now()+60000)continue;
+        const market = toMarketAccount(current);
+        const pool = poolOf(market), side = assignment.side;
         const margin = 250000;
+        if(snap.user.balance<BigInt(margin)){log({action:"insufficient-margin",owner:key.toSuiAddress()});break;}
         const cap = amm.maxLeverageBps(50000, Number(market.close_time) - Date.now() / 1000, 86400, amm.priceOf(pool, 0), 3600);
-        const lev = Math.min(10000 + ((report.rounds + index) % 3) * 10000, cap);
+        const lev = Math.min(assignment.leverageBps, cap);
         const q = amm.quoteOpen(pool, side, margin, lev);
-        if (!q?.reserved || amm.isLiquidatable(q.after, side, q.shares, q.debt)) { log({ action: "risk-skip", side, lev }); continue; }
+        if (!q?.reserved || amm.isLiquidatable(q.after, side, q.shares, q.debt)) { log({ action: "risk-skip", marketId:selected.id, side, lev }); continue; }
         const tx = newTransaction();
-        tx.moveCall({ target: target("open_position"), arguments: [tx.object(snap.id), tx.object(report.marketId), tx.pure.u8(side), tx.pure.u64(margin), tx.pure.u64(lev), tx.pure.u64(BigInt(q.shares) * 9900n / 10000n), tx.object(CLOCK_ID)] });
+        tx.moveCall({ target: target("open_position"), arguments: [tx.object(snap.id), tx.object(selected.id), tx.pure.u8(side), tx.pure.u64(margin), tx.pure.u64(lev), tx.pure.u64(BigInt(q.shares) * 9900n / 10000n), tx.object(CLOCK_ID)] });
         await send("open", tx, key);
+        break;
       }
     }
-    const market = await readSuiMarket(report.marketId);
-    let total = BigInt(market.vault), yes = 0n, no = 0n, debt = 0n;
-    const snapshots = await mapLimited(wallets, setupConcurrency, key => readAccount(key.toSuiAddress()));
-    for (const account of snapshots) {
-      total += account.usdc + (account.user?.balance ?? 0n);
-      for (const p of account.user!.positions.filter((p) => p.market_id === report.marketId)) { if (p.side === 0) yes += p.shares; else no += p.shares; debt += p.debt; }
-    }
-    assert.equal(total, baseline, "Collateral conservation failed");
-    assert.equal(yes, BigInt(market.liability_yes), "YES shares differ from liabilities");
-    assert.equal(no, BigInt(market.liability_no), "NO shares differ from liabilities");
-    assert.equal(debt, BigInt(market.debt), "Position debt differs from market debt");
-    assert(BigInt(market.vault) >= yes + no, "Outcome claims are under-reserved");
-    report.checks += 5;
+    if (interrupted) break;
+    await verifyAccounting();
     if (report.rounds % 5 === 0) {
       const victim = await readAccount(wallets[0].toSuiAddress());
       const tx = newTransaction(); tx.setSender(donor.toSuiAddress());
@@ -190,18 +266,25 @@ try {
       assert(attack.FailedTransaction, "Unauthorized withdrawal succeeded"); report.rejectedAttacks++;
     }
     report.rounds++;
-    console.log(`round=${report.rounds} tx=${report.transactions} checks=${report.checks} failures=${report.failures}`);
+    console.log(`round=${report.rounds} marketsTraded=${Object.keys(report.marketActivity).length} tx=${report.transactions} checks=${report.checks} failures=${report.failures}`);
+    for(const [id,a] of Object.entries(report.marketActivity))console.log(`  ${id} opens=${a.opens} closes=${a.closes} claims=${a.claims}`);
     fs.writeFileSync(path.join(outDir, "summary.json"), JSON.stringify(report, null, 2));
     if (interval) await new Promise((resolve) => setTimeout(resolve, interval));
   }
   // Finish with user funds in their own generated wallets when market time permits.
   for (const key of wallets) {
     let snap = await readAccount(key.toSuiAddress());
-    const market = await readSuiMarket(report.marketId);
-    if (Number(market.close_ms) <= Date.now() || market.state !== 0) continue;
-    for (const p of snap.user!.positions.filter((p) => p.market_id === report.marketId)) {
-      const tx = newTransaction(); tx.moveCall({ target: target("close_position"), arguments: [tx.object(snap.id!), tx.object(report.marketId), tx.pure.u8(p.side), tx.pure.u64(10000), tx.pure.u64(0), tx.object(CLOCK_ID)] });
-      await send("cleanup-close", tx, key);
+    for(const id of new Set(snap.user!.positions.map(p=>p.market_id))){
+      const market = await readSuiMarket(id);
+      if(market.state===4){
+        const tx=newTransaction();tx.moveCall({target:target("claim"),arguments:[tx.object(snap.id!),tx.object(id),tx.object(CLOCK_ID)]});
+        await send("cleanup-claim",tx,key);continue;
+      }
+      if (Number(market.close_ms) <= Date.now() || market.state !== 0) continue;
+      for (const p of snap.user!.positions.filter((p) => p.market_id === id)) {
+        const tx = newTransaction(); tx.moveCall({ target: target("close_position"), arguments: [tx.object(snap.id!), tx.object(id), tx.pure.u8(p.side), tx.pure.u64(10000), tx.pure.u64(0), tx.object(CLOCK_ID)] });
+        await send("cleanup-close", tx, key);
+      }
     }
     snap = await readAccount(key.toSuiAddress());
     if (snap.user!.balance > 0n) {
@@ -209,6 +292,7 @@ try {
       await send("cleanup-withdraw", tx, key);
     }
   }
+  if(!interrupted)await verifyAccounting();
   }
 } catch (error) {
   if (interrupted) { log({ action: "stopped" }); }
@@ -223,4 +307,5 @@ try {
   fs.writeFileSync(path.join(outDir, "summary.json"), JSON.stringify(final, null, 2));
   console.log(`Report: ${outDir}/summary.json`);
   console.log(`Resume wallets: ${keyDir} (private, ignored by git)`);
+  fs.unlinkSync(lockFile);
 }

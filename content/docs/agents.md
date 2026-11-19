@@ -21,7 +21,7 @@ The CLI builds Move calls locally against the package in deployments/testnet.jso
 
 ## Soak testing
 
-Run npm run sui:soak -- --minutes 30 --wallets 4 --interval-ms 2500. Read docs/SOAK.md for funding, reports, stopping and recovering remaining balances.
+Run npm run sui:soak -- --minutes 30 --wallets 4 --interval-ms 2500. Wallets trade across existing public open markets and rotate markets and sides after closing. Use --market-limit 3 to cap the pool count, or --isolated for a dedicated test pool. Read docs/SOAK.md for funding, reports, stopping and recovering remaining balances.
 
 ```diagram
 agent
