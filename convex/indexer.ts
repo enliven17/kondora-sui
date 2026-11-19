@@ -1,107 +1,49 @@
 "use node";
-// Indexer helper (called from tick.ts): mirrors on-chain market state into
-// Convex and turns ER program events into the activity feed.
-// Budget: one query and one batched mutation per run, plus trade inserts only
-// for markets whose on-chain trade count changed.
-
+import { internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
-import { ActionCtx } from "./_generated/server";
-import { Id } from "./_generated/dataModel";
-import { Connection } from "@solana/web3.js";
-import { DELEGATION_PROGRAM_ID, amm, decodeMarket, eventsFromLogs, marketPda } from "../lib/kondora";
-import { baseConnection, erConnection } from "../lib/kondora/server";
-
-const TICK_EVERY = 15 * 60;
-
-async function newEvents(conn: Connection, chainId: number, cursor: string | null) {
-  const sigs = await conn.getSignaturesForAddress(marketPda(BigInt(chainId)), { limit: 25, ...(cursor ? { until: cursor } : {}) });
-  const out: { sig: string; events: ReturnType<typeof eventsFromLogs> }[] = [];
-  for (const s of [...sigs].reverse()) {
-    if (s.err) continue;
-    const tx = await conn.getTransaction(s.signature, { maxSupportedTransactionVersion: 0 }).catch(() => null);
-    out.push({ sig: s.signature, events: eventsFromLogs(tx?.meta?.logMessages ?? []) });
-  }
-  return { out, head: sigs.length ? sigs[0].signature : cursor };
+import { readAllMarkets } from "../lib/sui/read";
+import type { SuiMarket } from "../lib/sui/schema";
+import { tradeEvents } from "../lib/sui/events";
+export function marketFields(m: SuiMarket) {
+  let metadata: { spec?: object; sourceName?: string; sourceUrl?: string; key?: string; tags?: string[] } = {};
+  try { metadata = JSON.parse(m.resolution); } catch { /* Preserve readable metadata. */ }
+  const priceYes = Number(m.reserve_no) / (Number(m.reserve_yes) + Number(m.reserve_no));
+  const status = m.state === 4 ? "resolved" : m.state === 3 ? "disputed" : m.state === 2 ? "proposed" : Number(m.close_ms) <= Date.now() ? "closed" : "open";
+  return {
+    key: metadata.key ?? m.id, chainId: m.id, status,
+    question: m.question, summary: m.summary, category: m.category, rules: m.rules,
+    resolution: metadata.spec ?? {}, sourceName: metadata.sourceName ?? "On-chain evidence", sourceUrl: metadata.sourceUrl ?? "https://sui.io",
+    tags: metadata.tags ?? [], openTime: Number(m.open_ms) / 1000, closeTime: Number(m.close_ms) / 1000,
+    initialPriceYes: priceYes, priceYes, volume: Number(m.volume) / 1e6, liquidity: Number(m.vault) / 1e6,
+    trades: Number(m.trades), traders: 0, delegated: false, swept: false,
+    ...(m.state === 4 ? { outcome: ["yes", "no", "invalid"][m.outcome] } : {}),
+    ...(m.evidence_hash.length ? { evidenceHash: Buffer.from(m.evidence_hash).toString("hex") } : {}),
+    ...(Number(m.proposed_ms) ? { proposedAt: Number(m.proposed_ms) / 1000 } : {}), updatedAt: Date.now(),
+  };
 }
-
-export async function runIndexer(ctx: ActionCtx): Promise<string> {
-  const base = baseConnection();
-  const er = erConnection();
-  const rows = await ctx.runQuery(internal.markets.syncState, {});
-  if (!rows.length) return "no markets";
-  const now = Math.floor(Date.now() / 1000);
-  const updates: {
-    id: Id<"markets">;
-    priceYes: number;
-    volume: number;
-    liquidity: number;
-    trades: number;
-    tick: boolean;
-    tickVolume: number;
-  }[] = [];
-  const changed: { row: (typeof rows)[number]; delegated: boolean }[] = [];
-
-  for (let i = 0; i < rows.length; i += 90) {
-    const chunk = rows.slice(i, i + 90);
-    const keys = chunk.map((m) => marketPda(BigInt(m.chainId)));
-    const baseInfos = await base.getMultipleAccountsInfo(keys);
-    const delegated = keys.filter((_, j) => baseInfos[j]?.owner.equals(DELEGATION_PROGRAM_ID));
-    const erInfos = delegated.length ? await er.getMultipleAccountsInfo(delegated) : [];
-    const erByKey = new Map(delegated.map((k, j) => [k.toBase58(), erInfos[j]]));
-    chunk.forEach((m, j) => {
-      const isDelegated = erByKey.has(keys[j].toBase58());
-      const info = (isDelegated ? erByKey.get(keys[j].toBase58()) : null) ?? baseInfos[j];
-      if (!info) return;
-      const a = decodeMarket(info.data);
-      const priceYes = amm.cdf(a.z);
-      const volume = Number(a.volume) / 1e6;
-      const trades = Number(a.trades);
-      const moved = Math.abs(m.lastP - priceYes) > 0.001;
-      const due = now - m.lastT >= TICK_EVERY;
-      if (!moved && !due && trades === m.trades) return;
-      updates.push({
-        id: m.id,
-        priceYes,
-        volume,
-        liquidity: Number(a.cash) / 1e6,
-        trades,
-        tick: moved || due,
-        tickVolume: Math.max(0, volume - m.volume),
+export const run = internalAction({ args: {}, handler: async (ctx) => {
+  if (process.env.KONDORA_BACKEND_OFF === "1") return { skipped: true };
+  const markets = await readAllMarkets();
+  for (const market of markets) await ctx.runMutation(internal.suiStore.upsertMarket, { fields: marketFields(market) });
+  let cursor: string | null = await ctx.runQuery(internal.markets.getCursor, { name: "sui-trades-v1" });
+  let trades = 0;
+  for (let page = 0; page < 5; page++) {
+    const batch = await tradeEvents(cursor);
+    const rows = [];
+    for (const e of batch.events) {
+      if (e.kind === 3) continue; // Claims are settlement, not traded notional.
+      const market = await ctx.runQuery(internal.markets.getByChain, { chainId: e.market_id });
+      if (!market) throw new Error(`Missing indexed market ${e.market_id}`);
+      rows.push({ marketId: market._id, chainId: e.market_id, owner: e.owner, side: e.side === 0 ? "yes" : "no",
+        kind: ["open", "close", "liquidation"][e.kind], leverage: Number(e.leverage_bps) / 10000,
+        amount: Number(e.margin) / 1e6, shares: Number(e.shares) / 1e6, priceYes: Number(e.price_bps) / 10000,
+        t: Number(e.timestamp_ms) / 1000, sig: `${e.digest}:${e.sequence}`,
       });
-      if (trades !== m.trades) changed.push({ row: m, delegated: isDelegated });
-    });
-  }
-  if (updates.length) await ctx.runMutation(internal.markets.recordSyncBatch, { rows: updates });
-
-  let traded = 0;
-  for (const { row: m, delegated } of changed) {
-    const cursorName = `sig:${m.chainId}`;
-    const cursor = await ctx.runQuery(internal.markets.getCursor, { name: cursorName });
-    const { out, head } = await newEvents(delegated ? er : base, m.chainId, cursor);
-    const tradeRows = out.flatMap(({ sig, events }) =>
-      events
-        .filter((e) => (e.name === "PositionOpened" || e.name === "PositionClosed") && Number(e.data.market_id) === m.chainId)
-        .map((e) => {
-          const d = e.data as Record<string, unknown>;
-          const opened = e.name === "PositionOpened";
-          return {
-            marketId: m.id,
-            chainId: m.chainId,
-            owner: (d.owner as { toBase58(): string }).toBase58(),
-            side: Number(d.side) === 0 ? "yes" : "no",
-            kind: opened ? "open" : d.liquidation ? "liquidation" : "close",
-            leverage: opened ? Number(d.lev_bps) / 10_000 : 0,
-            amount: Number(opened ? d.margin : d.to_user) / 1e6,
-            shares: Number(d.shares) / 1e6,
-            priceYes: Number(d.price_yes),
-            t: Number(d.ts),
-            sig,
-          };
-        }),
-    );
-    if (tradeRows.length || head !== cursor) {
-      traded += await ctx.runMutation(internal.markets.insertTradesAndCursor, { rows: tradeRows, cursorName, cursor: head ?? "" });
     }
+    trades += await ctx.runMutation(internal.markets.insertTradesAndCursor, { rows, cursorName: "sui-trades-v1", cursor: batch.endCursor ?? cursor ?? "" });
+    cursor = batch.endCursor;
+    if (!batch.hasNextPage) break;
   }
-  return `synced ${updates.length}/${rows.length}, trades ${traded}`;
-}
+  await ctx.runMutation(internal.markets.agentRun, { agent: "Sui Indexer", role: "crank", ok: true, note: `${markets.length} shared markets synced` });
+  return { markets: markets.length, trades };
+} });

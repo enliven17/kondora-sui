@@ -2,7 +2,7 @@
 // elements (React 19 hoists them into <head>), so the browser starts DNS/TLS from the HTML itself
 // rather than after the Flight payload is processed.
 
-import { ENDPOINTS } from "./kondora";
+import { SUI_RPC } from "./sui/config";
 
 function originOf(url: string | undefined): string | null {
   if (!url) return null;
@@ -29,7 +29,7 @@ export function PreconnectConvex() {
   return <Preconnect urls={[process.env.NEXT_PUBLIC_CONVEX_URL]} />;
 }
 
-/** Solana base RPC and the Ephemeral Rollup: only routes that read live chain state (market detail, portfolio). */
+/** Sui base RPC and the Ephemeral Rollup: only routes that read live chain state (market detail, portfolio). */
 export function PreconnectChain() {
-  return <Preconnect urls={[process.env.NEXT_PUBLIC_SOLANA_RPC || ENDPOINTS.base, ENDPOINTS.er]} />;
+  return <Preconnect urls={[SUI_RPC]} />;
 }

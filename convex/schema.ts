@@ -14,7 +14,7 @@ export const marketStatus = v.union(
 export default defineSchema({
   markets: defineTable({
     key: v.string(),
-    chainId: v.optional(v.number()),
+    chainId: v.optional(v.string()),
     status: marketStatus,
     question: v.string(),
     summary: v.string(),
@@ -51,7 +51,7 @@ export default defineSchema({
 
   trades: defineTable({
     marketId: v.id("markets"),
-    chainId: v.number(),
+    chainId: v.string(),
     owner: v.string(),
     side: v.union(v.literal("yes"), v.literal("no")),
     kind: v.union(v.literal("open"), v.literal("close"), v.literal("liquidation")),

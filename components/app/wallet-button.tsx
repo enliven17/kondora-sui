@@ -1,7 +1,6 @@
 "use client";
 
-import { useWallet } from "@solana/wallet-adapter-react";
-import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import { useSuiWallet as useWallet, useWalletModal } from "./wallet-runtime";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { cn } from "@/lib/utils";
@@ -94,7 +93,7 @@ export function WalletButton({ className, tone = "plum", label = "Connect wallet
     );
   }
 
-  const address = publicKey.toBase58();
+  const address = publicKey;
   const item = "w-full rounded-sm px-3 py-2 text-left text-sm text-fg/85 transition-colors hover:bg-fg/5 hover:text-fg";
 
   return (

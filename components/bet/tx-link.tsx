@@ -11,7 +11,7 @@ export function TxLink({ tx, className }: { tx: TxLinkData; className?: string }
       rel="noopener noreferrer"
       className={cn("font-mono text-[11px] text-haze underline decoration-line/20 underline-offset-4 hover:text-fg", className)}
     >
-      {tx.layer === "er" ? "Rollup" : "Solana"} tx {shortHash(tx.signature, 5)}
+      {"Sui"} tx {shortHash(tx.signature, 5)}
     </a>
   );
 }

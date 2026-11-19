@@ -8,9 +8,6 @@
  * @module
  */
 
-import type * as agentApi from "../agentApi.js";
-import type * as apiAgents from "../apiAgents.js";
-import type * as crank from "../crank.js";
 import type * as creator from "../creator.js";
 import type * as crons from "../crons.js";
 import type * as health from "../health.js";
@@ -19,7 +16,8 @@ import type * as indexer from "../indexer.js";
 import type * as markets from "../markets.js";
 import type * as oracle from "../oracle.js";
 import type * as stats from "../stats.js";
-import type * as tick from "../tick.js";
+import type * as sui from "../sui.js";
+import type * as suiStore from "../suiStore.js";
 
 import type {
   ApiFromModules,
@@ -28,9 +26,6 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  agentApi: typeof agentApi;
-  apiAgents: typeof apiAgents;
-  crank: typeof crank;
   creator: typeof creator;
   crons: typeof crons;
   health: typeof health;
@@ -39,7 +34,8 @@ declare const fullApi: ApiFromModules<{
   markets: typeof markets;
   oracle: typeof oracle;
   stats: typeof stats;
-  tick: typeof tick;
+  sui: typeof sui;
+  suiStore: typeof suiStore;
 }>;
 
 /**

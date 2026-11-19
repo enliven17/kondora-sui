@@ -1,6 +1,6 @@
 "use client";
 
-import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import { useWalletModal } from "@/components/app/wallet-runtime";
 import { AnimatePresence } from "motion/react";
 import Link from "next/link";
 import { useCallback, useEffect, useId, useMemo, useState } from "react";
@@ -46,7 +46,7 @@ export interface BetPanelProps {
 
 function blockReason(margin: number, minTrade: number, overBalance: boolean, priceLimitHit: boolean, unhealthy = false): string | null {
   if (!(margin > 0)) return "Enter an amount";
-  if (margin < minTrade) return `Minimum ${minTrade} USDC`;
+  if (margin < minTrade) return `Minimum ${minTrade} kUSD`;
   if (overBalance) return "Above your balance";
   if (priceLimitHit) return "Too large for this pool";
   if (unhealthy) return "Too large at this leverage, lower the amount or leverage";
@@ -66,7 +66,7 @@ export function BetPanel({ market, initialSide = "yes", initialAmount = 5, serve
   const { snap, wallet, ready, reload, connected } = account;
   const live = useLiveMarket(market.id);
   // Mock markets (local dev without Convex) have slugs, not on-chain ids.
-  const onChain = /^\d+$/.test(market.id);
+  const onChain = /^0x[0-9a-f]{64}$/i.test(market.id);
   const { setVisible } = useWalletModal();
   const { sound, setSound, success } = useFeedback();
   const now = useNow(15_000) ?? serverNow;
@@ -225,7 +225,7 @@ export function BetPanel({ market, initialSide = "yes", initialAmount = 5, serve
             </label>
             {balance !== null && (
               <span className="text-xs text-haze">
-                Balance <span className="num text-muted">{formatNumber(balance)}</span> USDC
+                Balance <span className="num text-muted">{formatNumber(balance)}</span> kUSD
               </span>
             )}
           </div>
@@ -247,7 +247,7 @@ export function BetPanel({ market, initialSide = "yes", initialAmount = 5, serve
               aria-describedby={overBalance ? `${amountId}-err` : undefined}
               aria-invalid={overBalance || undefined}
             />
-            <span className="pr-3 text-sm font-medium text-haze">USDC</span>
+            <span className="pr-3 text-sm font-medium text-haze">kUSD</span>
           </div>
           {overBalance && (
             <p id={`${amountId}-err`} className="mt-1 text-xs text-down">
@@ -342,14 +342,14 @@ export function BetPanel({ market, initialSide = "yes", initialAmount = 5, serve
             >
               Connect wallet to bet
             </button>
-            <p className="text-center text-[11px] text-haze">Bets settle in USDC on Solana devnet.</p>
+            <p className="text-center text-[11px] text-haze">Bets settle in kUSD on Sui testnet.</p>
           </>
         ) : !snap ? (
           <button type="button" disabled className="flex h-14 w-full items-center justify-center rounded bg-fg/10 text-base font-bold text-muted">
             {account.error ?? "Reading your account"}
           </button>
         ) : !ready ? (
-          <EnableTrading key={snap.owner.toBase58()} snap={snap} wallet={wallet} onDone={() => void reload()} />
+          <EnableTrading key={snap.owner} snap={snap} wallet={wallet} onDone={() => void reload()} />
         ) : (
           <>
             <button

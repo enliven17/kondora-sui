@@ -77,8 +77,8 @@ function describeField(r: { kind?: string; symbol?: string; teamName?: string } 
 }
 
 async function byPublicId(ctx: QueryCtx, id: string): Promise<Doc<"markets"> | null> {
-  if (/^\d+$/.test(id)) {
-    return ctx.db.query("markets").withIndex("by_chain", (q) => q.eq("chainId", Number(id))).first();
+  if (/^0x[0-9a-f]{64}$/i.test(id)) {
+    return ctx.db.query("markets").withIndex("by_chain", (q) => q.eq("chainId", id)).first();
   }
   const norm = ctx.db.normalizeId("markets", id);
   return norm ? ctx.db.get(norm) : null;
@@ -224,7 +224,7 @@ export const byStatus = internalQuery({
 
 export const getById = internalQuery({ args: { id: v.id("markets") }, handler: (ctx, { id }) => ctx.db.get(id) });
 export const getByChain = internalQuery({
-  args: { chainId: v.number() },
+  args: { chainId: v.string() },
   handler: (ctx, { chainId }) => ctx.db.query("markets").withIndex("by_chain", (q) => q.eq("chainId", chainId)).first(),
 });
 

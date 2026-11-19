@@ -29,7 +29,7 @@ import { type PositionRow, PositionsTable } from "./positions-table";
 
 const noopSubscribe = () => () => {};
 
-/** Chain position (micro units) to the UI position (whole USDC). */
+/** Chain position (micro units) to the UI position (whole kUSD). */
 function toPosition(p: PositionData, feeBps: number): Position {
   const margin = amm.usdc(p.margin);
   const debt = amm.usdc(p.debt);
@@ -126,7 +126,7 @@ export function PortfolioView({ markets: initialMarkets, demoPositions, serverNo
   const [message, setMessage] = useState<{ text: string; tone: "ok" | "error"; tx?: TxLinkData } | null>(null);
 
   const markets = useLiveMarketList(initialMarkets);
-  const owner = mounted && snap ? snap.owner.toBase58() : null;
+  const owner = mounted && snap ? snap.owner : null;
   const ownerActivity = useLiveActivity(owner ? { owner, limit: 40 } : "skip", []);
 
   const chainPositions = useMemo(() => (snap?.user ? activePositions(snap.user) : []), [snap]);
@@ -170,7 +170,7 @@ export function PortfolioView({ markets: initialMarkets, demoPositions, serverNo
     const data = chainPositions.find((p) => String(p.market_id) === row.position.marketId && (p.side === 0 ? "yes" : "no") === row.position.side);
     const result: TradeResult =
       kind === "claim"
-        ? await claimPosition({ wallet, snap, marketId: BigInt(row.position.marketId) })
+        ? await claimPosition({ wallet, snap, marketId: row.position.marketId })
         : live && data
           ? await closePosition({ wallet, snap, live, position: data })
           : { ok: false, error: "The pool is still loading. Try again in a moment." };
@@ -191,7 +191,7 @@ export function PortfolioView({ markets: initialMarkets, demoPositions, serverNo
           <div>
             <h2 className="text-base font-bold text-fg">Wallet not connected</h2>
             <p className="mt-0.5 text-sm text-muted">
-              {demo ? "This is a demo portfolio. Connect a wallet to see your own positions on devnet." : "Connect a wallet to see your balance and positions on devnet."}
+              {demo ? "This is a demo portfolio. Connect a wallet to see your own positions on testnet." : "Connect a wallet to see your balance and positions on testnet."}
             </p>
           </div>
           <WalletButton className="shrink-0 self-start sm:self-auto" />
@@ -212,7 +212,7 @@ export function PortfolioView({ markets: initialMarkets, demoPositions, serverNo
 
       {connected && snap && (ready ? <FundsPanel snap={snap} wallet={wallet} onDone={() => void reload()} /> : (
         <Panel className="p-4 sm:p-5">
-          <EnableTrading key={snap.owner.toBase58()} snap={snap} wallet={wallet} onDone={() => void reload()} />
+          <EnableTrading key={snap.owner} snap={snap} wallet={wallet} onDone={() => void reload()} />
         </Panel>
       ))}
 

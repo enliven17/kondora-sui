@@ -1,7 +1,7 @@
 /**
  * UI-facing domain types.
  *
- * Money here is in whole USDC (floats) and prices are probabilities in [0, 1].
+ * Money here is in whole kUSD (floats) and prices are probabilities in [0, 1].
  * The on-chain program uses 6-decimal integers and leverage in basis points;
  * convert at the adapter boundary (lib/data.ts, lib/trade.ts), never in components.
  */
@@ -31,7 +31,7 @@ export interface PricePoint {
   t: number;
   /** YES probability, 0..1. */
   p: number;
-  /** Traded notional in the interval ending at t, USDC. */
+  /** Traded notional in the interval ending at t, kUSD. */
   v: number;
 }
 
@@ -69,9 +69,9 @@ export interface Market {
   yesPrice: number;
   /** Change of YES price over 24h, in probability units (0.03 = +3 pts). */
   change24h: number;
-  /** Lifetime traded notional, USDC. */
+  /** Lifetime traded notional, kUSD. */
   volume: number;
-  /** Cash in the market pool (S), USDC. Used by the pm-AMM estimate. */
+  /** Cash in the market pool (S), kUSD. Used by the pm-AMM estimate. */
   liquidity: number;
   traders: number;
   resolution: ResolutionSource;
@@ -88,7 +88,7 @@ export interface Activity {
   kind: ActivityKind;
   side: Side;
   leverage: number;
-  /** Margin for opens, proceeds for closes and liquidations. USDC. */
+  /** Margin for opens, proceeds for closes and liquidations. kUSD. */
   amount: number;
   /** Side price at execution. */
   price: number;

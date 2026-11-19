@@ -1,0 +1,9 @@
+{
+  "network": "testnet",
+  "packageId": "0x234a0ad982c2bd7682ed689ea751b1939d1a84bf48581c21b43683b2a976f708",
+  "registryId": "0xbb8a94f3660b6e830525b16fb0aa38123ab8ff2f22a83ea80f819e53331ac8ef",
+  "faucetId": "0xd036e05b748d81b42c634dbf555006ac231802aa15737a4c374bb62d05aa74eb",
+  "deployer": "0xd99e726620eece55420d867cb312a8c6beec92825dec9ed1bf9eb9802d2b6fe3",
+  "publishDigest": "3XWWaSkGUTzceu9GmZrobzZixgXZkM9YhPgLrhKeP5JR",
+  "deployedAt": "2026-11-19T10:55:51.445Z"
+}

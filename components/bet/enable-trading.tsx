@@ -1,6 +1,6 @@
 "use client";
 
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+const LAMPORTS_PER_SOL = 1_000_000_000;
 import { useId, useState } from "react";
 
 import { useFeedback } from "@/hooks/use-feedback";
@@ -11,11 +11,12 @@ import type { TradeWallet, TxLink as TxLinkData } from "@/lib/trade";
 import { enableTrading } from "@/lib/trade-lazy";
 import { cn } from "@/lib/utils";
 import { TxLink } from "./tx-link";
+import { TestFaucet } from "./test-faucet";
 
-export const USDC_FAUCET = "https://faucet.circle.com";
-export const SOL_FAUCET = "https://faucet.solana.com";
+export const kUSD_FAUCET = "https://sui.kondora.xyz/portfolio";
+export const SOL_FAUCET = "https://faucet.sui.io/?network=testnet";
 /** Rent for the account, session token and delegation buffers, plus the session top-up. */
-const MIN_SOL = 0.03;
+const MIN_SOL = 0.01;
 
 export function FaucetLinks({ usdc, sol, className }: { usdc: boolean; sol: boolean; className?: string }) {
   if (!usdc && !sol) return null;
@@ -24,20 +25,20 @@ export function FaucetLinks({ usdc, sol, className }: { usdc: boolean; sol: bool
     <p className={cn("text-xs leading-relaxed text-muted", className)}>
       {sol && (
         <>
-          Your wallet needs devnet SOL for fees.{" "}
+          Your wallet needs testnet SUI for fees.{" "}
           <a href={SOL_FAUCET} target="_blank" rel="noopener noreferrer" className={link}>
-            Get devnet SOL
+            Get testnet SUI
           </a>
           {usdc ? " " : ""}
         </>
       )}
       {usdc && (
         <>
-          You need devnet USDC to bet.{" "}
-          <a href={USDC_FAUCET} target="_blank" rel="noopener noreferrer" className={link}>
-            Get devnet USDC
+          You need testnet kUSD to bet.{" "}
+          <a href={kUSD_FAUCET} target="_blank" rel="noopener noreferrer" className={link}>
+            Open the kUSD faucet
           </a>{" "}
-          (pick Solana Devnet).
+          Mint free kUSD below.
         </>
       )}
     </p>
@@ -72,7 +73,7 @@ export function EnableTrading({ snap, wallet, onDone }: { snap: AccountSnapshot;
   const needsSol = sol < MIN_SOL;
   const needsUsdc = walletUsdc <= 0 && balance <= 0;
   const overWallet = amount > walletUsdc;
-  const blocked = needsSol ? "Get devnet SOL first" : overWallet ? "Above your wallet USDC" : amount <= 0 && balance <= 0 ? "Enter a deposit" : null;
+  const blocked = needsSol ? "Get testnet SUI first" : overWallet ? "Above your wallet kUSD" : amount <= 0 && balance <= 0 ? "Enter a deposit" : null;
 
   const submit = async () => {
     if (!wallet || blocked || pending) return;
@@ -98,17 +99,17 @@ export function EnableTrading({ snap, wallet, onDone }: { snap: AccountSnapshot;
         Enable trading
       </h3>
       <p className="mt-1 text-sm leading-relaxed text-muted">
-        One approval sets up your account, deposits USDC and creates a 24 hour session key. After that, bets go through with no wallet popup.
+        Create a Sui trading account and deposit test kUSD. Your wallet approves each transaction.
       </p>
 
       <dl className="mt-3 space-y-1.5 border-t border-line/10 pt-3 text-sm">
         <Step label="Account" done={snap.exists} note="Create" />
-        <Step label="Session key" done={Boolean(snap.session)} note="Create, 24h" />
-        <Step label="Trading mode" done={snap.delegated} note="Move to rollup" />
+        
+        <Step label="Trading mode" done={snap.exists} note="Sui shared account" />
         <div className="flex items-baseline justify-between gap-3">
           <dt className="text-muted">Wallet</dt>
           <dd className="num text-fg/85">
-            {formatNumber(walletUsdc)} USDC, {sol.toFixed(3)} SOL
+            {formatNumber(walletUsdc)} kUSD, {sol.toFixed(3)} SOL
           </dd>
         </div>
       </dl>
@@ -140,11 +141,12 @@ export function EnableTrading({ snap, wallet, onDone }: { snap: AccountSnapshot;
         >
           Max
         </button>
-        <span className="pr-3 text-sm font-medium text-haze">USDC</span>
+        <span className="pr-3 text-sm font-medium text-haze">kUSD</span>
       </div>
-      {balance > 0 && <p className="mt-1 text-xs text-haze">Already in your account: {formatNumber(balance)} USDC.</p>}
+      {balance > 0 && <p className="mt-1 text-xs text-haze">Already in your account: {formatNumber(balance)} kUSD.</p>}
 
       <FaucetLinks usdc={needsUsdc} sol={needsSol} className="mt-3" />
+      <TestFaucet wallet={wallet} onDone={onDone} />
 
       <button
         type="button"

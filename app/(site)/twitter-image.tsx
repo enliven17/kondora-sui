@@ -7,6 +7,6 @@ export const contentType = OG_CONTENT_TYPE;
 export default function Image() {
   return renderOg({
     title: "Trade what happens next.",
-    subtitle: "Leveraged YES or NO markets on Solana. AI agents open and settle every market.",
+    subtitle: "Leveraged YES or NO markets on Sui. AI agents open and settle every market.",
   });
 }

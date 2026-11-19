@@ -8,17 +8,14 @@ import {
   type PoolState,
   priceOf,
   quoteOpen,
-  sharesForCost,
-  g,
   usdc,
-  zForPrice,
   type Side as ProgramSide,
 } from "./kondora/math";
 import type { Market, Position, Side } from "./types";
 
 /**
  * UI adapter over lib/kondora/math.ts, the TypeScript mirror of the on-chain engine.
- * Components pass whole USDC and probabilities; conversion to micro USDC, basis points
+ * Components pass whole kUSD and probabilities; conversion to micro kUSD, basis points
  * and the pool's z/L state happens here and nowhere else.
  */
 
@@ -45,12 +42,12 @@ export function sidePrice(market: Pick<Market, "yesPrice">, side: Side) {
 
 /**
  * Pool state for a market. z comes from the YES price; L is chosen so the pool's
- * value at z matches the cash on hand (S = L * g(|z|)), in micro USDC.
+ * value at z matches the cash on hand (S = L * g(|z|)), in micro kUSD.
  */
 export function poolFor(market: Pick<Market, "yesPrice" | "liquidity">): PoolState {
-  const z = zForPrice(Math.min(Math.max(market.yesPrice, 1e-4), 1 - 1e-4));
-  const l = Math.max(micro(market.liquidity) / g(Math.abs(z)), 1);
-  return { z, l, feeBps: PROTOCOL.feeBps, mmBps: PROTOCOL.mmBps };
+  const cash = BigInt(Math.max(micro(market.liquidity), 1000000));
+  const price = BigInt(Math.min(9999, Math.max(1, Math.floor(market.yesPrice * BPS))));
+  return { yes: cash * (10000n - price) / 10000n, no: cash * price / 10000n, feeBps: PROTOCOL.feeBps, mmBps: PROTOCOL.mmBps };
 }
 
 export type CapReason = "max" | "time" | "price" | "reduce-only";
@@ -93,7 +90,7 @@ export interface BetQuote {
   priceAfter: number;
   /** Side price at which the position is liquidated, null at 1x. */
   liqPrice: number | null;
-  /** USDC paid out if the side wins, after repaying debt. */
+  /** kUSD paid out if the side wins, after repaying debt. */
   payoutIfWin: number;
   profitIfWin: number;
   /** The pool cannot fill this size (curve limit or price above 99¢). */
@@ -151,6 +148,7 @@ export function quoteBet(
   maxSidePrice: number = PROTOCOL.maxSidePrice,
   floorL?: number,
 ): BetQuote {
+  void floorL;
   const m = Math.max(0, margin);
   const price = sidePrice(market, side);
   const empty: BetQuote = {
@@ -174,10 +172,10 @@ export function quoteBet(
   const payoutIfWin = Math.max(0, usdc(q.maxPayout));
   // Same checks as engine::open: healthy at spot after the trade, and at floor liquidity.
   const ps = toProgramSide(side);
-  const after = { ...pool, z: q.zAfter };
+  const after = q.after;
   const unhealthy =
     q.debt > 0 &&
-    (isLiquidatable(after, ps, q.shares, q.debt) || (floorL !== undefined && floorL > 0 && isLiquidatable({ ...after, l: floorL }, ps, q.shares, q.debt)));
+    isLiquidatable(after, ps, q.shares, q.debt);
   return {
     margin: m,
     leverage,
@@ -190,18 +188,16 @@ export function quoteBet(
     liqPrice: q.liquidationPrice,
     payoutIfWin,
     profitIfWin: payoutIfWin - m,
-    priceLimitHit: q.priceAfter > maxSidePrice,
+    priceLimitHit: q.priceAfter > maxSidePrice || !q.reserved,
     unhealthy,
   };
 }
 
-/** Average fill and price after for a plain 1x buy of `size` USDC. Used by the price impact chart. */
+/** Average fill and price after for a plain 1x buy of `size` kUSD. Used by the price impact chart. */
 export function priceImpact(market: Pick<Market, "yesPrice" | "liquidity">, side: Side, size: number) {
   const pool = poolFor(market);
-  const spend = micro(size * (1 - PROTOCOL.feeRate));
-  const r = sharesForCost(pool.z, pool.l, toProgramSide(side), spend);
-  if (!r || r.shares <= 0) return null;
-  return { avg: spend / r.shares, after: priceOf(r.z, toProgramSide(side)) };
+  const q = quoteOpen(pool, toProgramSide(side), micro(size), BPS);
+  return q && q.shares > 0 ? { avg: q.avgPrice, after: q.priceAfter } : null;
 }
 
 export interface PositionView {
@@ -220,7 +216,7 @@ export interface PositionView {
 
 export function valuePosition(position: Position, market: Pick<Market, "yesPrice" | "liquidity">, pool: PoolState = poolFor(market)): PositionView {
   const side = toProgramSide(position.side);
-  const mark = priceOf(pool.z, side);
+  const mark = priceOf(pool, side);
   const value = usdc(exitValue(pool, side, micro(position.shares)));
   const equity = value - position.debt - position.accrued;
   const pnl = equity - position.margin;

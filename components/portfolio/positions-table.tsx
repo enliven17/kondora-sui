@@ -13,7 +13,7 @@ export interface PositionRow {
   position: Position;
   market: Market;
   view: PositionView;
-  /** USDC claimable when the market has settled, else null. */
+  /** kUSD claimable when the market has settled, else null. */
   claimable: number | null;
   /** Trading has closed and the outcome is not final yet. */
   settling?: boolean;

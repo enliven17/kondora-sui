@@ -10,9 +10,9 @@ export interface HistoryItem {
   side: Side;
   kind: "close" | "liquidation" | "claim";
   leverage: number;
-  /** Realized PnL, USDC. Null when only the proceeds are known. */
+  /** Realized PnL, kUSD. Null when only the proceeds are known. */
   pnl: number | null;
-  /** USDC returned to the balance. */
+  /** kUSD returned to the balance. */
   proceeds: number;
   t: number;
   /** Transaction signature, when known. */
@@ -22,7 +22,7 @@ export interface HistoryItem {
 export interface PlatformStats {
   totalVolume: number;
   openMarkets: number;
-  /** Pool cash across open markets, USDC. */
+  /** Pool cash across open markets, kUSD. */
   liquidity: number;
   settled: number;
   byCategory: Record<string, number>;
@@ -44,11 +44,11 @@ export interface FeedItem {
   side: Side;
   leverage: number;
   kind: Activity["kind"];
-  /** Notional at entry for opens, proceeds for closes. USDC. */
+  /** Notional at entry for opens, proceeds for closes. kUSD. */
   size: number;
-  /** Margin for opens, USDC. */
+  /** Margin for opens, kUSD. */
   margin: number;
-  /** Mark-to-market for opens, null when unknown. USDC. */
+  /** Mark-to-market for opens, null when unknown. kUSD. */
   pnl: number | null;
   t: number;
 }

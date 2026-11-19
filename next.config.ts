@@ -11,12 +11,12 @@ const CSP = [
   [
     "connect-src 'self'",
     "https://*.convex.cloud wss://*.convex.cloud https://*.convex.site",
-    "https://api.devnet.solana.com wss://api.devnet.solana.com",
-    "https://devnet.helius-rpc.com wss://devnet.helius-rpc.com",
-    "https://*.magicblock.app wss://*.magicblock.app",
-    "https://*.solflare.com wss://*.solflare.com",
+    "https://fullnode.testnet.sui.io:443 https://fullnode.testnet.sui.io",
+    "https://*.sui.io https://*.mystenlabs.com https://*.walrus.space",
+    
+    
   ].join(" "),
-  "frame-src https://*.solflare.com",
+  "frame-src 'none'",
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",

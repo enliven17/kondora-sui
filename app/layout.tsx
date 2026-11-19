@@ -20,9 +20,9 @@ const sans = localFont({
 const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap", preload: false });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://kondora.xyz"),
+  metadataBase: new URL("https://sui.kondora.xyz"),
   title: {
-    default: "Kondora: leveraged prediction markets on Solana",
+    default: "Kondora: leveraged prediction markets on Sui",
     template: "%s | Kondora",
   },
   description:
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Kondora",
-    url: "https://kondora.xyz",
+    url: "https://sui.kondora.xyz",
     locale: "en_US",
   },
   twitter: { card: "summary_large_image" },

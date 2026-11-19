@@ -77,7 +77,7 @@ export default async function StatsPage() {
     <div className="page-x mx-auto max-w-[72rem] pb-24 pt-14 sm:pt-20">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <h1 className="text-[clamp(2.75rem,7vw,4.5rem)] font-medium leading-none tracking-[-0.045em] text-cocoa">Platform stats</h1>
-        <p className="text-sm text-mauve">Across every market on devnet. Refreshes every minute.</p>
+        <p className="text-sm text-mauve">Across every market on testnet. Refreshes every minute.</p>
       </div>
 
       <div className="mt-10 grid gap-3 lg:grid-cols-2">

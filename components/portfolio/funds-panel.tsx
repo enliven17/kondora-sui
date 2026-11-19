@@ -1,6 +1,6 @@
 "use client";
 
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+const LAMPORTS_PER_SOL = 1_000_000_000;
 import { useId, useState } from "react";
 
 import { FaucetLinks } from "@/components/bet/enable-trading";
@@ -12,10 +12,11 @@ import { amm } from "@/lib/kondora";
 import type { TradeResult, TradeWallet, TxLink as TxLinkData } from "@/lib/trade";
 import { enableTrading, withdraw } from "@/lib/trade-lazy";
 import { cn } from "@/lib/utils";
+import { TestFaucet } from "@/components/bet/test-faucet";
 
 type Busy = "deposit" | "withdraw" | null;
 
-/** Move USDC between the wallet and the trading account. */
+/** Move kUSD between the wallet and the trading account. */
 export function FundsPanel({ snap, wallet, onDone }: { snap: AccountSnapshot; wallet: TradeWallet | null; onDone: () => void }) {
   const [amountText, setAmountText] = useState("");
   const [busy, setBusy] = useState<Busy>(null);
@@ -40,7 +41,7 @@ export function FundsPanel({ snap, wallet, onDone }: { snap: AccountSnapshot; wa
       return;
     }
     setAmountText("");
-    setMessage({ text: kind === "deposit" ? `Deposited ${formatNumber(amount)} USDC.` : `Withdrew ${formatNumber(amount)} USDC to your wallet.`, tone: "ok", tx: result.tx });
+    setMessage({ text: kind === "deposit" ? `Deposited ${formatNumber(amount)} kUSD.` : `Withdrew ${formatNumber(amount)} kUSD to your wallet.`, tone: "ok", tx: result.tx });
   };
 
   const button = "h-11 rounded px-4 text-sm font-bold transition-[background-color,transform] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40";
@@ -52,11 +53,11 @@ export function FundsPanel({ snap, wallet, onDone }: { snap: AccountSnapshot; wa
         <dl className="grid grid-cols-2 gap-3 text-sm">
           <div>
             <dt className="text-xs text-haze">Wallet</dt>
-            <dd className="num mt-0.5 text-fg">{formatNumber(walletUsdc)} USDC</dd>
+            <dd className="num mt-0.5 text-fg">{formatNumber(walletUsdc)} kUSD</dd>
           </div>
           <div>
             <dt className="text-xs text-haze">Trading account</dt>
-            <dd className="num mt-0.5 text-fg">{formatNumber(balance)} USDC</dd>
+            <dd className="num mt-0.5 text-fg">{formatNumber(balance)} kUSD</dd>
           </div>
         </dl>
 
@@ -75,7 +76,7 @@ export function FundsPanel({ snap, wallet, onDone }: { snap: AccountSnapshot; wa
             onChange={(e) => setAmountText(e.target.value)}
             className="num h-11 w-full min-w-0 bg-transparent px-3 text-lg text-fg placeholder:text-haze focus:outline-none"
           />
-          <span className="pr-3 text-sm font-medium text-haze">USDC</span>
+          <span className="pr-3 text-sm font-medium text-haze">kUSD</span>
         </div>
         <div className="grid grid-cols-2 gap-2">
           <button
@@ -96,9 +97,10 @@ export function FundsPanel({ snap, wallet, onDone }: { snap: AccountSnapshot; wa
           </button>
         </div>
         <p className="text-xs leading-relaxed text-haze">
-          Your account moves from the rollup to Solana and back, so expect two approvals and about 20 seconds.
+          Deposits and withdrawals execute directly on Sui testnet with a wallet approval.
         </p>
         <FaucetLinks usdc={walletUsdc <= 0} sol={sol < 0.01} />
+        <TestFaucet wallet={wallet} onDone={onDone} />
         <div aria-live="polite" className="space-y-1">
           {message && (
             <p role={message.tone === "error" ? "alert" : undefined} className={cn("text-xs", message.tone === "error" ? "text-down" : "text-online")}>

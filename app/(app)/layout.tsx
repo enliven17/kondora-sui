@@ -1,5 +1,5 @@
 // Wallet modal base styles first so the Kondora overrides in app.css win.
-import "@solana/wallet-adapter-react-ui/styles.css";
+
 import "./app.css";
 
 import type { ReactNode } from "react";
