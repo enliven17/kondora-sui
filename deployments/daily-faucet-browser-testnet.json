@@ -1,0 +1,16 @@
+{
+  "network": "sui:testnet",
+  "address": "0x5338762d48d6a622605d58644dbbf719780d29ef2e81dc3e6f5066de0f2a92d4",
+  "digest": "FyuLKjHgCmV4Zio8bxcDKYe7TswvvXKSQPWwPKtrqTWF",
+  "claimedAt": 1795099858385,
+  "nextClaimAt": 1795186258385,
+  "amountKusd": 100,
+  "recipientGasSui": 0,
+  "signatureRequests": 0,
+  "browser": "Wallet Standard QA wallet on production Portfolio",
+  "automaticWelcomeVerified": true,
+  "reconnectBalanceUnchanged": true,
+  "countdownButtonDisabled": true,
+  "mobileLayoutInspected": true,
+  "verifiedAt": "2026-11-19T14:52:37.417Z"
+}

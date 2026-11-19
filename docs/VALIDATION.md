@@ -16,6 +16,11 @@ Validated on 2026-11-19 against the package in `deployments/testnet.json`.
   Real testnet delivery to a wallet with zero SUI succeeded; reconnect, manual
   repeat and concurrent duplicate requests left its balance at exactly 100 kUSD.
   Receipts are in `deployments/daily-faucet-smoke-testnet.json`.
+- Production Portfolio was tested with a Wallet Standard QA wallet. Connecting
+  automatically delivered 100 kUSD, with zero recipient SUI and zero signing
+  requests. The wallet balance refreshed, the claim button showed its countdown,
+  and disconnect/reconnect left the balance unchanged. The mobile layout was
+  visually inspected. See `deployments/daily-faucet-browser-testnet.json`.
 - Typecheck, ESLint, dependency audit and the Next.js production build passed.
 - Real testnet smoke completed through proposal, five-minute dispute window,
   finalization and claim. Public digests are in `deployments/smoke-testnet.json`.
