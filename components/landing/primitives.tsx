@@ -174,7 +174,7 @@ const LIQ_Y = H - ((0.31 - 0.2) / 0.32) * H;
 
 function MarkVisual({ play }: { play: boolean }) {
   return (
-    <Card eyebrow="Position health" title="SOL above $250 this week" aside={<Tag tone="down">NO 2x</Tag>}>
+    <Card eyebrow="Position health" title="SUI above $5 this week" aside={<Tag tone="down">NO 2x</Tag>}>
       <svg viewBox={`-6 -6 ${W + 12} ${H + 12}`} className="w-full" role="img" aria-label="Spot price wicks below the liquidation line while the mark stays above">
         <line x1={0} x2={W} y1={LIQ_Y} y2={LIQ_Y} stroke="rgb(var(--acc))" strokeDasharray="5 5" strokeWidth={1.5} />
         <text x={W} y={LIQ_Y - 6} textAnchor="end" className="fill-acc text-[10px]">liquidation 0.31</text>
@@ -259,7 +259,7 @@ function EvidenceVisual({ play }: { play: boolean }) {
       <div className="mt-4">
         <div className="flex justify-between text-[11px] text-muted">
           <span>Dispute window</span>
-          <span className="num text-fg/80">12m left</span>
+          <span className="num text-fg/80">3m left</span>
         </div>
         <div className="mt-1.5 h-1.5 overflow-hidden rounded-sm bg-panel-deep">
           <motion.div className="h-full bg-acc" initial={{ width: "100%" }} animate={{ width: "20%" }} transition={{ duration: 6, ease: "linear" }} />
@@ -272,12 +272,12 @@ function EvidenceVisual({ play }: { play: boolean }) {
 /* ── 5. Agent terminal ───────────────────────────────────────────────── */
 
 const TERMINAL: { kind: "cmd" | "out"; text: string }[] = [
-  { kind: "cmd", text: "kondora-agent quote 42 yes 5 --lev 2" },
+  { kind: "cmd", text: "npm run agent -- quote 0x… yes 5 2" },
   { kind: "out", text: "shares 17.9   avg 0.556   liq 0.29" },
-  { kind: "cmd", text: "kondora-agent bet 42 yes 5 --lev 2" },
-  { kind: "out", text: "filled in the rollup   tx 4hQe..9xTr" },
-  { kind: "cmd", text: "kondora-agent run --strategy edge.md --max-lev 2" },
-  { kind: "out", text: "watching 64 markets, 3 with edge above 8 pts" },
+  { kind: "cmd", text: "npm run agent -- bet 0x… yes 5 2" },
+  { kind: "out", text: "confirmed on Sui   tx 4hQe..9xTr" },
+  { kind: "cmd", text: "npm run agent -- account" },
+  { kind: "out", text: "read your on-chain balance and positions" },
 ];
 
 function AgentVisual({ play }: { play: boolean }) {

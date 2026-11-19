@@ -1,130 +1,120 @@
 <p align="center">
-  <a href="https://kondora.vercel.app">
-    <img src="brand/social/x-banner.png" alt="Kondora — Trade what happens next. Leveraged prediction markets on Solana." width="100%" />
-  </a>
+  <a href="https://sui.kondora.xyz"><img src="brand/social/x-banner.png" alt="Kondora — Trade what happens next. Leveraged prediction markets on Sui." width="100%" /></a>
 </p>
+
+<p align="center"><strong>Pick YES or NO. Choose your leverage. Trade on Sui testnet.</strong></p>
 
 <p align="center">
-  <a href="https://kondora.vercel.app/markets"><img alt="Network: Solana devnet" src="https://img.shields.io/badge/Solana-devnet-320713?style=flat-square&amp;logo=solana&amp;logoColor=FFF3F5&amp;labelColor=23050D" /></a>
-  <a href="https://kondora.vercel.app/docs/leverage"><img alt="Leverage: up to 5x" src="https://img.shields.io/badge/Leverage-up_to_5x-FFC7CF?style=flat-square&amp;labelColor=320713" /></a>
-  <a href="https://kondora.vercel.app/docs/program"><img alt="Execution: MagicBlock Ephemeral Rollups" src="https://img.shields.io/badge/MagicBlock-Ephemeral_Rollups-FFFC8F?style=flat-square&amp;labelColor=320713" /></a>
-  <a href="https://nextjs.org"><img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-FFF3F5?style=flat-square&amp;logo=nextdotjs&amp;labelColor=23050D" /></a>
-  <a href="https://www.convex.dev"><img alt="Backend: Convex" src="https://img.shields.io/badge/Backend-Convex-FF8A94?style=flat-square&amp;labelColor=320713" /></a>
+  <a href="https://kondora-sui.vercel.app/markets">Open the app</a> ·
+  <a href="https://kondora-sui.vercel.app/docs">Documentation</a> ·
+  <a href="https://kondora-sui.vercel.app/brand">Brand kit</a> ·
+  <a href="docs/HACKATHON.md">CLAY submission guide</a>
 </p>
 
-<p align="center">
-  <strong>Pick YES or NO. Choose your leverage. Let the agents handle the market.</strong><br />
-  AI agents create questions, gather evidence and settle outcomes on Solana.
-</p>
+Kondora Sui brings [Kondora](https://github.com/enliven17/kondora)'s interface and
+agent-driven prediction markets to Sui. Shared Move objects enforce balances,
+constant-product execution, up to 5x bounded leverage, full outcome reserves,
+evidence-backed oracle proposals, disputes and claims.
 
-<p align="center">
-  <a href="https://kondora.vercel.app/markets"><strong>Open the app</strong></a> ·
-  <a href="https://kondora.vercel.app/docs">Documentation</a> ·
-  <a href="https://kondora.vercel.app/docs/agents">Build an agent</a> ·
-  <a href="https://kondora.vercel.app/brand">Brand kit</a>
-</p>
+**Sui testnet only.** kUSD is a freely mintable demonstration coin with no monetary
+value. It is not Circle USDC. Testnet SUI pays network gas. This is a hackathon
+prototype; see the [risk notes](content/docs/risks.md).
 
-## A market that runs itself
-
-| Trade outcomes | Borrow with limits | Check the evidence |
-| :--- | :--- | :--- |
-| YES and NO positions priced by a pm-AMM, across eight categories. | Up to 5x leverage, with caps that shrink toward close and a pre-settlement wind-down. | Deterministic feeds first, a multi-provider council when needed, and an on-chain dispute window. |
-
-| Fast execution | Agents included | Keys stay local |
-| :--- | :--- | :--- |
-| MagicBlock Ephemeral Rollups with session-signed trading. | Creator, oracle, auditor and crank jobs run through Convex. | The public API builds unsigned transactions; the CLI checks their intent before signing. |
-
-## From question to settlement
+## How it works
 
 ```mermaid
 flowchart LR
-    A[Creator finds a question] --> B[House funds the market]
-    B --> C[Traders take YES or NO]
-    C --> D[Leverage winds down]
-    D --> E[Oracle proposes an outcome]
-    E --> F[Auditor checks the evidence]
-    F --> G[Dispute window and finalization]
-    G --> H[Claim and withdraw]
+  A[Creator funds a shared Market] --> B[Wallet deposits kUSD]
+  B --> C[Buy YES or NO]
+  C --> D[Close or await settlement]
+  D --> E[Oracle commits evidence hash]
+  E --> F[Five-minute dispute window]
+  F --> G[Finalize or dispute ruling]
+  G --> H[Claim and withdraw]
 ```
 
-Crypto · Macro · Sports · Esports · Politics · World · Tech · Culture
+| Layer | Implementation |
+| --- | --- |
+| Contracts | Sui Move, shared Registry/Account/Market and a test-coin Faucet |
+| Wallets | Wallet Standard, current Mysten dApp Kit, testnet-only signing |
+| Live reads | Sui gRPC, typed BCS decoding and account ownership checks |
+| Backend | Separate Convex deployment, Sui indexing and scheduled agents |
+| Website | Next.js 16 on a separate Vercel project |
+| Evidence | Exact JSON in Convex, SHA-256 plus a public URI committed on chain |
+
+The original Solana repository is independent and unchanged. The Sui edition uses
+a constant-product integer curve; its accounting is implemented in Move and
+mirrored in the client. It does not use Solana delegation or session keys.
 
 ## Run locally
 
-Use **Node.js 22.12+** and npm. The Rust program also needs the Anchor and Solana toolchains.
+Use Node.js 22.12+ and npm. Install the Sui CLI to build or test Move.
 
-```bash
-git clone https://github.com/enliven17/kondora.git
-cd kondora
+```sh
+git clone https://github.com/enliven17/kondora-sui.git
+cd kondora-sui
 npm ci
 cp .env.example .env.local
 npm run dev
 ```
 
-Open [localhost:3000](http://localhost:3000). To connect live data, set
-`NEXT_PUBLIC_CONVEX_URL` in `.env.local`. `NEXT_PUBLIC_SOLANA_RPC` optionally
-selects a devnet RPC endpoint.
+Set `NEXT_PUBLIC_CONVEX_URL` to your own Convex deployment for live indexed data.
+The checked-in testnet package IDs are in [deployments/testnet.json](deployments/testnet.json).
+Without Convex, local development explicitly uses demo markets. Never commit local
+wallets or environment files.
 
-To develop the backend, run `npx convex dev` and configure the server-side agent
-keys in Convex. Keep wallet secrets and provider keys out of `NEXT_PUBLIC_*`
-variables. Chain setup lives in [scripts/bootstrap.mts](scripts/bootstrap.mts);
-the program and account model are described in the [program guide](content/docs/program.md).
+To deploy a new isolated package, run `npm run sui:deploy`. It creates a local key
+in `.keys/sui-deployer.key`, requests testnet gas through the official faucet and
+publishes through gRPC. Existing package IDs are preserved unless `--republish`
+is explicitly supplied.
 
-## Bring your own trading agent
+## Trade with a local agent
 
-```bash
-node cli/kondora-agent.mjs keygen
-# Fund the address with devnet SOL and Circle devnet USDC.
-node cli/kondora-agent.mjs setup --deposit 20
-node cli/kondora-agent.mjs markets --category crypto
-node cli/kondora-agent.mjs quote 42 yes 5 --lev 2
+```sh
+npm run agent -- keygen
+npm run agent -- faucet
+npm run agent -- mint
+npm run agent -- setup 20
+npm run agent -- markets
+npm run agent -- quote MARKET_ID yes 5 2
+npm run agent -- bet MARKET_ID yes 5 2
 ```
 
-Install dependencies with `npm ci` from the repository root; the app, CLI and
-program tests share one workspace lockfile and the security overrides.
-Use your own model and strategy in autonomous mode. Read the
-[agent guide](content/docs/agents.md) and [API reference](content/docs/api.md)
-for configuration, signed registration and transaction flows.
+The CLI builds transactions locally and keeps keys in `.keys/agent.key`. Override
+with `SUI_KEY_FILE` or `SUI_PRIVATE_KEY`. No key is sent to the website or a model.
+See the [agent guide](content/docs/agents.md).
 
-## Verify changes
+## Verify and soak
 
-```bash
-npm run test:security
+```sh
+npm test
+npm run move:test
 npm run typecheck
 npm run lint
 npm run build
 npm audit
+npm run sui:smoke -- --settlement
+npm run sui:soak -- --minutes 30 --wallets 4 --interval-ms 2500
 ```
 
-The security suite covers transaction substitution, oracle finality, evidence
-trust, API limits and dependency regressions. Rust unit tests and the LiteSVM
-transaction flow are in [`program/`](program/); the transaction flow needs a
-compiled `kondora.so` and the test bridge.
+The smoke test exercises real testnet mint, deposit, opening, partial closing,
+withdrawal, unauthorized-withdrawal rejection, proposal, finalization and claim.
+The soak checks collateral conservation, debt, outcome liabilities and full vault
+reserves while alternating sides and leverage. Read [docs/SOAK.md](docs/SOAK.md)
+before a long run. Public testnet endpoints can fail; results and digests remain
+in `.soak/`, and generated wallets remain in `.keys/`.
 
-```bash
-cargo test --lib --manifest-path program/programs/kondora/Cargo.toml
-```
+## Repository
 
-## Inside the repository
+| Path | Contents |
+| --- | --- |
+| `move/kondora/` | Move contracts and adversarial unit tests |
+| `lib/sui/` | gRPC, BCS, event indexing and transaction builders |
+| `lib/kondora/math.ts` | Integer quote arithmetic matching Move |
+| `app/`, `components/` | Original Kondora design adapted to Sui |
+| `convex/`, `agents/` | Indexer, creator, oracle, auditor and source adapters |
+| `scripts/`, `cli/` | Deployment, smoke, soak and local trading |
+| `deployments/` | Public object IDs and verification receipts |
+| `brand/`, `public/brand/` | Original artwork with Sui social exports |
 
-| Path | What lives here |
-| :--- | :--- |
-| [`app/`](app/) · [`components/`](components/) | Next.js app, market screens, portfolio and documentation |
-| [`program/`](program/) | Anchor program, pricing engine and on-chain tests |
-| [`convex/`](convex/) | Public queries, agent API, indexing and scheduled jobs |
-| [`agents/`](agents/) | Source adapters, creator, oracle, auditor and council |
-| [`lib/kondora/`](lib/kondora/) | Instruction builders, account codec and pricing math |
-| [`cli/`](cli/) | Local trading agent and transaction intent validation |
-| [`vendor/`](vendor/) | Documented security replacements for affected dependencies |
-| [`brand/`](brand/) | Logo, social assets and the [design system](brand/DESIGN.md) |
-
-## Devnet, by design
-
-Kondora currently uses **Solana devnet** and **Circle devnet USDC**. These tokens
-have no real-money value. Leverage can lose your margin, and automated sources
-and infrastructure can fail. Read the [risk notes](content/docs/risks.md) before trading.
-
-<p align="center">
-  <a href="https://kondora.vercel.app"><img src="brand/logo/kondora-mark-plum.svg" alt="Kondora" width="40" /></a><br />
-  <a href="https://kondora.vercel.app">kondora.vercel.app</a>
-</p>
+Deployment and domain notes: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).

@@ -1,55 +1,35 @@
 ---
 title: Program
-description: On-chain accounts, instructions and the Ephemeral Rollup flow.
+description: Move objects, transactions, ownership and settlement.
 order: 9
 section: Build
 ---
 
-# Program
+## Move package
 
-Program ID: `BoZu45xZ4HFe4bvpYaGjcaDeqPaPTKSjMGYg5xFyXSuJ` (Solana devnet), Anchor 1.0.
+The source lives in move/kondora. Deployment object IDs and the publication digest are recorded in deployments/testnet.json. The package has two modules: kusd for the valueless test coin and market for trading and resolution.
 
-## Accounts
+## Object model
 
-| Account | Seeds | Holds |
-| --- | --- | --- |
-| Config | `config` | Roles (admin, creator, oracle, auditor), the pinned rollup validator, risk parameters, House balances |
-| Vault | `vault` | Every USDC in the protocol, owned by Config |
-| UserAccount | `user`, owner | Internal balance and up to 24 positions |
-| Market | `market`, id | pm-AMM state, mark, cash, outstanding shares, lending pool, fees, outcome, evidence hash |
+| Object | Purpose |
+| --- | --- |
+| Registry | Admin, oracle, market IDs and address-to-account table |
+| Account | Owner, kUSD balance, positions and realized profit/loss |
+| Market | Metadata, reserves, liabilities, vault, debt and resolution state |
+| Faucet | Shared TreasuryCap for freely mintable test collateral |
 
-Accounting is internal. At every point the vault holds at least the sum of user balances, free House capital, and the cash, lending pool and fees of every unsettled market. The test suite checks this after every settlement path.
+## Trading functions
 
-## Instructions
+create_account, deposit, withdraw, create_market, open_position, close_position, liquidate and claim are public Move functions. The module checks account ownership and registry authority. Liquidation is permissionless only when the position fails the maintenance check.
 
-**Base layer:** `initialize`, `update_config`, `house_deposit`, `house_withdraw`, `init_user`, `deposit`, `withdraw`, `create_market` (creator only), `delegate_market` (creator only), `delegate_user`, `close_market`, `propose_resolution` (oracle), `challenge` (auditor), `finalize`, `rule` (admin), `sweep`.
+## Resolution functions
 
-**Ephemeral Rollup:** `open_position`, `close_position`, `liquidate`, `claim`, `undelegate_user`, `undelegate_market`.
+propose requires the configured oracle. challenge is open during the dispute window. finalize and timeout are permissionless with clock constraints. rule and set_oracle require the registry admin. There is no arbitrary admin withdrawal function.
 
-`liquidate`, `claim`, `finalize`, `sweep` and `undelegate_market` are permissionless.
+## Validation
 
-## Rollup flow
+Run npm run move:test and npm test. Run npm run sui:smoke -- --settlement for real testnet lifecycle receipts. The SDK uses gRPC; the old public JSON-RPC interface is not required.
 
 ```diagram
 rollup
 ```
-
-
-1. The creator opens a market on Solana and delegates it to the pinned MagicBlock validator in the same transaction.
-2. A trader deposits on Solana, then delegates their UserAccount.
-3. Trades run in the rollup: no per-trade SOL fees, fast confirmation, and a session key in place of a wallet popup. Protocol trading fees still apply.
-4. At close, `undelegate_market` freezes the mark and commits the market back to Solana, where the oracle settles it.
-5. To withdraw, the trader undelegates their account and withdraws on Solana.
-
-## Session keys
-
-Trades accept either the owner's signature or a MagicBlock session token (`SessionTokenV2`) scoped to this program. A session key can open and close positions but cannot withdraw. Closes signed by a session key must carry a slippage bound.
-
-## Safety properties
-
-- The curve supports sells at its bound. An individual close must still pass slippage, account-state, and debt-repayment checks.
-- Liquidations hand the position to the House at the time-weighted mark, never through the pool.
-- A leveraged position must stay healthy at floor liquidity, which caps its size relative to the pool.
-- An owner cannot close an underwater position. Only liquidation can realize a shortfall.
-- A market cannot close while debt is open, and leverage is forced out ten minutes before close.
-- Pausing stops new positions. Exits and claims still work.

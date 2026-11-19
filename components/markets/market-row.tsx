@@ -18,7 +18,7 @@ export function QuickBetChip({ marketId, side, amount }: { marketId: string; sid
   return (
     <Link
       href={`/markets/${marketId}?side=${side}&amount=${amount}`}
-      aria-label={`Bet ${amount} USDC on ${side.toUpperCase()}`}
+      aria-label={`Bet ${amount} kUSD on ${side.toUpperCase()}`}
       className={cn(
         "inline-flex h-9 items-center justify-center gap-1 rounded-sm px-2 sm:min-w-[4.25rem] sm:gap-1.5 sm:px-2.5 text-xs font-bold transition-[background-color,color,transform] duration-150 active:scale-95",
         SIDE_CHIP[side],

@@ -43,7 +43,7 @@ export function SiteFooter() {
 
         <div className="mt-8 grid gap-12 border-t border-line/10 pt-10 lg:grid-cols-[1fr_auto]">
           <p className="max-w-sm text-sm leading-relaxed text-muted">
-            Leveraged positions can be liquidated. Devnet, test funds only. Markets are opened and settled by AI agents;
+            Leveraged positions can be liquidated. Testnet, test funds only. Markets are opened and settled by AI agents;
             read the risks before you trade.
           </p>
 

@@ -1,6 +1,6 @@
 # Kondora brand
 
-The design system and asset contract live in [DESIGN.md](./DESIGN.md). This file is the short guide for using the brand. A live version is at kondora.xyz/brand.
+The design system and asset contract live in [DESIGN.md](./DESIGN.md). This file is the short guide for using the brand. A live version is at sui.kondora.xyz/brand.
 
 ## Logo
 

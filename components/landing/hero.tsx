@@ -18,7 +18,7 @@ const DESKTOP_SRCSET = artSrcSet("/art/hero.webp", 2400, [1280, 1600]);
 const MOBILE_SRCSET = artSrcSet("/art/hero-mobile.webp", 1080, [720]);
 const SIZES = "(min-width: 1760px) 1760px, 100vw";
 
-const BADGES = ["Solana", "MagicBlock"] as const;
+const BADGES = ["Sui", "Sui Move"] as const;
 
 export function Hero() {
   const ref = useRef<HTMLElement>(null);

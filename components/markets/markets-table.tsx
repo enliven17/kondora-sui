@@ -78,7 +78,7 @@ export function MarketsTable({ markets: initial, initialCategory, serverNow }: {
         <p className="whitespace-nowrap text-xs text-haze" aria-live="polite">
           <span className="num text-muted">{visible.length}</span> <span className="hidden xs:inline">{visible.length === 1 ? "market" : "markets"}</span>
         </p>
-        <div role="radiogroup" aria-label="Quick bet amount in USDC" className="flex items-center gap-1">
+        <div role="radiogroup" aria-label="Quick bet amount in kUSD" className="flex items-center gap-1">
           <span className="mr-1 hidden text-xs text-haze xs:inline">Quick bet</span>
           {QUICK_AMOUNTS.map((a) => (
             <button
@@ -95,7 +95,7 @@ export function MarketsTable({ markets: initial, initialCategory, serverNow }: {
               {a}
             </button>
           ))}
-          <span className="ml-1 text-xs text-haze">USDC</span>
+          <span className="ml-1 text-xs text-haze">kUSD</span>
         </div>
       </div>
 

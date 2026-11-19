@@ -5,52 +5,26 @@ order: 12
 section: Reference
 ---
 
-# Glossary
+## Account
 
-## Positions and prices
+A shared Move object holding an owner's available kUSD and positions. Every owner action verifies the transaction sender.
 
-| Term | Meaning |
-| --- | --- |
-| YES / NO | The two sides of a market's exact question. A finalized winning share pays 1 USDC. |
-| Spot price | The current pool price for an outcome, before the price impact of your order. |
-| Mark price | A time-weighted pool price used for liquidation and the frozen final mark. |
-| Average fill price | The average price paid across all shares in a trade. |
-| Margin | Your own USDC committed to a position. |
-| Notional | Total purchasing amount before the trading fee: margin × leverage. |
-| Debt | The amount borrowed to buy the position, excluding accrued interest. |
-| Equity | Position value after subtracting debt and accrued interest. The exit quote also reflects execution costs. |
-| Liquidation | A transfer of an unhealthy borrowed position to the House, with debt cancellation and a penalty. |
-| Slippage | The difference between a quote and execution; a slippage bound limits how much worse the fill may be. |
+## Market and registry
 
-See [Trading](/docs/trading) and [Leverage](/docs/leverage) for the formulas and limits.
+A Market is a shared pool and its immutable question/rules plus mutable trading and settlement state. The Registry records market IDs and account lookup entries.
 
-## Accounts and execution
+## Margin, notional and debt
 
-| Term | Meaning |
-| --- | --- |
-| House | The protocol market maker that supplies liquidity and lending capital. |
-| pm-AMM | The automated market maker that quotes YES and NO shares. |
-| Trading balance | Deposited USDC credited to your Kondora account and available to use. |
-| Ephemeral Rollup | MagicBlock's execution environment for delegated accounts and fast trading. |
-| Delegation | Moving account execution into the rollup. It does not give the API your signing key. |
-| Undelegation | Committing the account back to Solana so base-layer operations can run. |
-| Session key | A scoped trading key that lets you trade without approving every order in your wallet. It cannot withdraw. |
-| Gasless trade | A rollup trade without a per-trade SOL fee. Trading fees and borrowing costs still apply. |
+Margin is the trader's contribution. Notional is margin multiplied by leverage. Debt is the difference and accrues hourly interest until close.
 
-See [Program](/docs/program) for the account and instruction reference.
+## Reserves and liabilities
 
-## Resolution and payouts
+Virtual YES/NO reserves determine the constant-product execution price. Liabilities are outstanding outcome shares. Vault cash must cover both sides' combined shares.
 
-| Term | Meaning |
-| --- | --- |
-| Close time | The deadline after which trading stops. It is separate from finalization. |
-| Oracle | The agent that derives an outcome from named sources and proposes it on-chain. |
-| Evidence hash | A SHA-256 commitment to the sealed bundle of sources and resolution evidence. |
-| Auditor | An agent that checks the outcome independently and can challenge a proposal. |
-| Dispute window | The 15-minute period after a proposal during which it can be challenged. |
-| Arbiter | The independent resolution pass used after a challenge. |
-| Finalization | The step that makes the decided outcome available for claims. |
-| INVALID | An outcome that pays YES at the frozen final mark and NO at one minus that mark. It does not refund entry prices. |
-| Claim | Crediting a finalized position's payout to the trading account. Withdrawal to a wallet is a separate step. |
+## kUSD and SUI
 
-See [Oracle and audit](/docs/oracle) for the settlement paths.
+kUSD is the six-decimal valueless demonstration collateral. Testnet SUI pays gas. A digest identifies a transaction; an object ID identifies persistent Move state.
+
+## Proposal, dispute and INVALID
+
+A proposal includes an outcome and evidence hash. The five-minute dispute window allows challenges. INVALID pays the frozen YES mark and its NO complement instead of a binary winner.

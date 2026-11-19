@@ -4,7 +4,7 @@
 // Output: brand/social/*.png and public/brand/social/*.png
 
 import puppeteer from "puppeteer-core";
-import { copyFileSync, mkdirSync, readFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = process.cwd();
@@ -56,7 +56,7 @@ const designs = [
       <div style="position:absolute;right:90px;top:50%;transform:translateY(-50%);text-align:right;color:${C.fg}">
         <div style="display:flex;justify-content:flex-end">${lockup(46, C.fg)}</div>
         <div style="margin-top:26px;font-size:64px;font-weight:700;letter-spacing:-0.045em;line-height:.95">Trade what<br/>happens next.</div>
-        <div style="margin-top:18px;font-size:22px;font-weight:500;color:${C.fg}cc">Leveraged prediction markets on Solana</div>
+        <div style="margin-top:18px;font-size:22px;font-weight:500;color:${C.fg}cc">Leveraged prediction markets on Sui</div>
       </div></div>`,
   },
   {
@@ -98,7 +98,7 @@ const designs = [
       <div style="position:absolute;inset:0;background:linear-gradient(270deg,${C.ink}e6 0%,${C.ink}88 40%,transparent 72%)"></div>
       <div style="position:absolute;right:90px;top:50%;transform:translateY(-50%);text-align:right;color:${C.fg}">
         <div style="font-size:56px;font-weight:700;letter-spacing:-0.045em;line-height:.95">Trade what happens next.</div>
-        <div style="margin-top:14px;font-size:22px;font-weight:500;color:${C.fg}cc">kondora.xyz</div>
+        <div style="margin-top:14px;font-size:22px;font-weight:500;color:${C.fg}cc">sui.kondora.xyz</div>
       </div></div>`,
   },
   {
@@ -109,11 +109,21 @@ const designs = [
       ${lockup(56, C.plum)}
       <div style="color:${C.cocoa};font-size:120px;font-weight:700;letter-spacing:-0.05em;line-height:.9">Trade what<br/>happens next.</div>
       <div style="display:flex;justify-content:space-between;align-items:center;color:${C.cocoa}">
-        <div style="font-size:30px;font-weight:500;opacity:.7">Leveraged prediction markets on Solana</div>
+        <div style="font-size:30px;font-weight:500;opacity:.7">Leveraged prediction markets on Sui</div>
         <div style="background:${C.acc};color:${C.ink};font-weight:700;font-size:28px;padding:14px 22px;border-radius:10px">Up to 5x</div>
       </div></div>`,
   },
 ];
+
+if (process.argv.includes("--html-only")) {
+  const dir = join(ROOT, ".local", "social-render");
+  mkdirSync(dir, { recursive: true });
+  const selected = designs.filter((d) => ["x-banner", "paper-card", "linkedin-banner", "og-default"].includes(d.name));
+  for (const d of selected) writeFileSync(join(dir, `${d.name}.html`), base(d.w, d.h, d.html));
+  writeFileSync(join(dir, "manifest.json"), JSON.stringify(selected.map(({ name, w, h }) => ({ name, w, h }))));
+  console.log(`Prepared ${selected.length} social designs in ${dir}`);
+  process.exit(0);
+}
 
 const browser = await puppeteer.launch({
   executablePath: process.env.CHROME_PATH ?? "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",

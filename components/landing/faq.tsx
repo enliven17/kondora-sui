@@ -8,15 +8,15 @@ import { cn } from "@/lib/utils";
 const FAQ = [
   {
     q: "Who creates markets?",
-    a: "Only the creator agent. It runs every hour, pulls candidates from sources that can settle them (price feeds, league schedules, liquid Polymarket questions, fresh headlines), drops anything vague or harmful, writes the rules and sets the opening price.",
+    a: "Only the creator agent. It runs every three hours, pulls candidates from sources that can settle them (price feeds, league schedules, liquid Polymarket questions, fresh headlines), drops anything vague or harmful, writes the rules and sets the opening price.",
   },
   {
     q: "How is a market settled?",
-    a: "The oracle agent reads deterministic feeds first: CoinGecko and Binance for prices, ESPN for sports, PandaScore for esports. Questions without a feed go to a council of five models from different providers. Every proposal carries a sealed evidence hash and waits out a 15 minute dispute window.",
+    a: "The oracle agent reads deterministic feeds first: CoinGecko and Binance for prices, ESPN for sports, PandaScore for esports. Questions without a feed go to a council of five models from different providers. Every proposal carries a sealed evidence hash and waits out a five minute dispute window.",
   },
   {
     q: "What happens at the close if I use leverage?",
-    a: "Ten minutes before the close, every borrowed position goes back to the House at the mark price with no penalty. You keep the mark value minus your loan and interest. No debt ever reaches settlement, so a leveraged position cannot be wiped by the final print.",
+    a: "Leverage drops to 1x for new positions in the final hour. Existing positions can be closed before the deadline or claimed after settlement. Debt and interest are subtracted from proceeds; a losing leveraged position can lose all its margin.",
   },
   {
     q: "What is INVALID?",
@@ -24,19 +24,19 @@ const FAQ = [
   },
   {
     q: "Can the oracle be wrong?",
-    a: "It can, which is why it is checked. The oracle only proposes at 85% confidence or more. An auditor on a different model provider re-derives the outcome without seeing the proposal and challenges on-chain if it disagrees. An independent arbiter pass then rules, or the market goes INVALID.",
+    a: "It can, which is why it is checked. The oracle only proposes at 85% confidence or more. An auditor on a different model provider re-derives the outcome without seeing the proposal and challenges on-chain if it disagrees. The registry admin can rule on a dispute, or a timeout makes the market INVALID.",
   },
   {
     q: "What are the fees?",
-    a: "A trade fee of 0.5% of notional on open and close, and 0.02% per hour on borrowed amounts. A liquidation adds a 1% penalty. Fees go to the House, which funds every market and takes the other side of every trade.",
+    a: "An opening fee of 0.5% of notional and 0.02% per hour on borrowed amounts. There is no separate close fee or liquidation penalty in this Sui edition. Every wallet transaction also uses testnet SUI for gas.",
   },
   {
     q: "Can I use my own agent?",
-    a: "Yes. Install the kondora-agent CLI or call the HTTP API. The API returns unsigned transactions, your agent signs them locally, and it trades under the same caps and fees as everyone else. It cannot create markets.",
+    a: "Yes. Use the trading CLI in the repository. It builds Sui transactions and signs locally with your own key, under the same caps and fees as everyone else. The public HTTP API provides read-only data.",
   },
   {
     q: "Is this real money?",
-    a: "Not yet. Kondora runs on Solana devnet with test USDC from the Circle faucet. Treat every number here as practice.",
+    a: "Not yet. Kondora runs on Sui testnet with freely mintable test kUSD from the in-app faucet. Treat every number here as practice.",
   },
 ] as const;
 

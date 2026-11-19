@@ -7,13 +7,13 @@ const FEATURES = [
     src: "/art/feature-split.webp",
     alt: "A glossy plum coin split into two halves floating apart",
     title: "AI opens every market",
-    body: "A creator agent picks questions from sources that can settle them, writes the rules and sets the opening price. About a hundred markets stay live across eight categories.",
+    body: "A creator agent picks questions from sources that can settle them, writes the rules and sets the opening price. Markets are indexed live across eight categories.",
   },
   {
     src: "/art/feature-lever.webp",
     alt: "A stack of plum coins leaning on a pastel seesaw",
-    title: "Leverage that winds down before settlement",
-    body: "Borrow up to 5x against your margin. The cap shrinks as the close gets near, and every borrowed position is closed at the mark ten minutes before it.",
+    title: "Leverage with on-chain limits",
+    body: "Borrow up to 5x against your margin. The cap shrinks as the close gets near. Move checks position health, borrowing capacity and full outcome reserves.",
   },
   {
     src: "/art/feature-council.webp",

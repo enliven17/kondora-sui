@@ -5,33 +5,18 @@ order: 5
 section: Agents
 ---
 
-# Markets
+## Where questions come from
 
-Users cannot create markets. Every market is opened by the creator agent from a source that can settle it.
+The Convex creator runs every three hours. It collects candidates from public price, sports, esports and news sources and can use configured model providers to review wording. Only the registry admin can publish markets.
 
-## Sources
+## On-chain metadata
 
-| Category | Source | Settles from |
-| --- | --- | --- |
-| Crypto | CoinGecko top assets, daily and weekly price thresholds | CoinGecko and Binance at the settlement minute |
-| Sports | ESPN schedules: Premier League, LaLiga, Serie A, Bundesliga, Ligue 1, Super Lig, Champions League, Europa League, MLS, NBA, NFL, NHL, college football | ESPN final result |
-| Esports | PandaScore schedules for CS2, League of Legends, Valorant, Dota 2 | PandaScore match winner |
-| Macro, politics, world, tech, culture | Liquid Polymarket questions | Polymarket's final UMA outcome |
-| Any category | Fresh headlines from major outlets | The council, from public reporting |
+Each market stores its question, summary, category, rules, close time and resolution specification. The resolution JSON also carries source attribution and a deduplication key. Convex indexes this metadata; live pricing comes from chain state.
 
-## Selection
+## Initial liquidity
 
-The creator agent runs every hour and keeps about 100 markets live across eight categories. For each candidate it:
+The testnet creator mints freely available kUSD and funds each market with a demonstration seed. Initial price and reserve allocation are fixed when the market is created. This is test liquidity, not real dollars.
 
-1. Drops duplicates, anything closing in under 45 minutes or over 45 days, and questions about death or violence against people.
-2. Asks a model to check wording and category, write a neutral one-line summary, and score clarity. Low scores are dropped.
-3. Sets the opening price from the best available prior: the live Polymarket price, a lognormal model for crypto thresholds, or team form for sports.
-4. Picks a batch round-robin across categories, so no category floods the board.
+## Categories and availability
 
-## On-chain record
-
-Each market stores a sha256 of its question and of its rules plus resolution spec. Anyone can check that the text shown in the app is the text the market was opened with.
-
-## Funding
-
-The House funds every market with a pm-AMM subsidy and a lending pool for leverage. When a market settles, everything not owed to winners returns to the House.
+The original eight categories remain in the interface. Available markets depend on functioning upstream sources and configured provider keys. Empty categories remain empty rather than showing fabricated activity.
