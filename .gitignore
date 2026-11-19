@@ -27,3 +27,9 @@ program/tests/svm-bridge/target/
 
 # soak run output
 .soak/
+
+# Sui builds and local deployment wallet
+move/**/build/
+move/**/.move/
+.local/
+*.key

@@ -1,0 +1,6 @@
+[package]
+name = "kondora"
+edition = "2024"
+
+[addresses]
+kondora = "0x0"
