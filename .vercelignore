@@ -3,6 +3,7 @@ program/**
 cli/**
 !cli/package.json
 scripts/
+tests/
 .keys/
 *.log
 brand/scripts/
