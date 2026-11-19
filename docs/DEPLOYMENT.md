@@ -4,8 +4,8 @@
 
 | Service | Address |
 | --- | --- |
-| Website | https://kondora-sui.vercel.app |
-| Canonical custom domain | https://sui.kondora.xyz |
+| Website / canonical domain | https://sui.kondora.xyz |
+| Vercel fallback | https://kondora-sui.vercel.app |
 | Convex backend | https://astute-toad-61.eu-west-1.convex.cloud |
 | Convex HTTP | https://astute-toad-61.eu-west-1.convex.site |
 | GitHub | https://github.com/enliven17/kondora-sui |
@@ -17,16 +17,32 @@ project. Production frontend changes deploy from this repository.
 
 ## Domain
 
-`sui.kondora.xyz` is attached to the Sui Vercel project. The domain has no working
-DNS yet. After buying `kondora.xyz`, add this record at its DNS provider:
+The purchased domain uses Hostinger DNS. Vercel assignments are:
 
-| Type | Name | Target |
+| Domain | Vercel project | Behavior |
 | --- | --- | --- |
-| CNAME | `sui` | `cname.vercel-dns.com` |
+| `kondora.xyz` | `cankats-projects/kondora` | Solana production |
+| `www.kondora.xyz` | `cankats-projects/kondora` | 308 redirect to `kondora.xyz` |
+| `sui.kondora.xyz` | `cankats-projects/kondora-sui` | Sui production |
 
-This target was returned by the Vercel domain configuration API on 2026-11-19.
-Do not change the apex or `www` records to connect this Sui project. Use the
-working Vercel URL until DNS propagation and certificate provisioning complete.
+The following existing Hostinger records were checked on 2026-11-19 against
+Vercel's domain configuration API and the authoritative DNS server:
+
+| Type | Name | Target | TTL |
+| --- | --- | --- | --- |
+| A | `@` | `216.198.79.1` | 60 |
+| CNAME | `www` | `a5588bac4b1a80cb.vercel-dns-017.com` | 300 |
+| CNAME | `sui` | `ddb0338423d529de.vercel-dns-017.com` | 14400 |
+
+The authoritative nameservers are `horizon.dns-parking.com` and
+`orbit.dns-parking.com`. At setup, the newly registered domain was still absent
+from the public `.xyz` delegation. Use the Vercel fallback URLs until registry
+publication, DNS propagation and HTTPS certificate provisioning complete.
+
+Both apps generate their default Open Graph and Twitter images at the root
+`/opengraph-image` and `/twitter-image` routes. This covers the landing page,
+Markets and Portfolio. Documentation keeps its individual share cards. Sui
+cards display `sui.kondora.xyz`; Solana cards display `kondora.xyz`.
 
 ## Frontend variables
 
@@ -87,7 +103,7 @@ withdrawal and no execution/invariant failures. Seven transport retries were
 needed. This is a functional validation, not a completed long-duration soak or
 a throughput result. Earlier interruptions remain in local `.soak/` logs.
 
-The nineteen Move unit tests, ten TypeScript tests, typecheck, lint and production
+The nineteen Move unit tests, thirteen TypeScript tests, typecheck, lint and production
 build are the reproducible local checks. The package has not received an
 independent security audit.
 

@@ -58,7 +58,7 @@ export async function renderOg({
           {subtitle && <div style={{ display: "flex", fontSize: 30, fontWeight: 500, color: c.sub, marginTop: 24, maxWidth: 900 }}>{subtitle}</div>}
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 22, fontWeight: 500, color: c.sub }}>
-          <span>kondora.xyz</span>
+          <span>sui.kondora.xyz</span>
           <span>YES or NO, up to 5x</span>
         </div>
       </div>

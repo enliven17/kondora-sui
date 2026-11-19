@@ -5,9 +5,9 @@
 <p align="center"><strong>Pick YES or NO. Choose your leverage. Trade on Sui testnet.</strong></p>
 
 <p align="center">
-  <a href="https://kondora-sui.vercel.app/markets">Open the app</a> ·
-  <a href="https://kondora-sui.vercel.app/docs">Documentation</a> ·
-  <a href="https://kondora-sui.vercel.app/brand">Brand kit</a> ·
+  <a href="https://sui.kondora.xyz/markets">Open the app</a> ·
+  <a href="https://sui.kondora.xyz/docs">Documentation</a> ·
+  <a href="https://sui.kondora.xyz/brand">Brand kit</a> ·
   <a href="docs/HACKATHON.md">CLAY submission guide</a>
 </p>
 
