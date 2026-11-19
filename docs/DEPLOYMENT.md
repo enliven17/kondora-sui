@@ -65,7 +65,9 @@ npx convex run --deployment production health:check
 
 The public HTTP API is read-only. Public evidence bundles are served at
 `/evidence/SHA256` on the Convex HTTP host. Contract writes remain signed Sui
-transactions and all backend writes are internal Convex functions.
+transactions. Trading/admin backend writes are internal Convex functions. The
+bounded daily faucet is the sole public Convex write action, separate from the
+read-only HTTP endpoints.
 
 ## Verification receipts
 
@@ -85,6 +87,21 @@ withdrawal and no execution/invariant failures. Seven transport retries were
 needed. This is a functional validation, not a completed long-duration soak or
 a throughput result. Earlier interruptions remain in local `.soak/` logs.
 
-The fourteen Move unit tests, seven TypeScript tests, typecheck, lint and production
+The nineteen Move unit tests, ten TypeScript tests, typecheck, lint and production
 build are the reproducible local checks. The package has not received an
 independent security audit.
+
+## Sponsored daily faucet
+
+The compatible v3 package and daily object are recorded in
+`deployments/daily-faucet-package-testnet.json` and
+`deployments/daily-faucet-testnet.json`. The dedicated faucet signer was funded
+with 0.3 testnet SUI and is stored in `.keys/sui-faucet.key` locally and
+`SUI_FAUCET_SECRET` on Convex. `SUI_DAILY_FAUCET_ID` and
+`SUI_DAILY_FAUCET_PACKAGE_ID` select this instance. They never replace the
+original trading package, registry or collateral type origins.
+
+For a new deployment, upgrade from the latest receipt with `sui:upgrade`, then
+run `npx tsx scripts/sui-faucet-setup.ts` and deploy Convex. The setup is
+idempotent once its receipt exists. Monitor the sponsor's testnet gas; users do
+not pay gas for faucet claims, but still pay for deposits and trading.

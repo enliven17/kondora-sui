@@ -12,7 +12,6 @@ import { amm } from "@/lib/kondora";
 import type { TradeResult, TradeWallet, TxLink as TxLinkData } from "@/lib/trade";
 import { enableTrading, withdraw } from "@/lib/trade-lazy";
 import { cn } from "@/lib/utils";
-import { TestFaucet } from "@/components/bet/test-faucet";
 
 type Busy = "deposit" | "withdraw" | null;
 
@@ -100,7 +99,6 @@ export function FundsPanel({ snap, wallet, onDone }: { snap: AccountSnapshot; wa
           Deposits and withdrawals execute directly on Sui testnet with a wallet approval.
         </p>
         <FaucetLinks usdc={walletUsdc <= 0} sol={sol < 0.01} />
-        <TestFaucet wallet={wallet} onDone={onDone} />
         <div aria-live="polite" className="space-y-1">
           {message && (
             <p role={message.tone === "error" ? "alert" : undefined} className={cn("text-xs", message.tone === "error" ? "text-down" : "text-online")}>

@@ -106,6 +106,10 @@ public fun set_oracle(registry: &mut Registry, oracle: address, ctx: &TxContext)
     assert!(registry.admin == ctx.sender(), EOwner);
     registry.oracle = oracle;
 }
+public fun create_daily_faucet(registry: &Registry, sponsor: address, ctx: &mut TxContext) {
+    assert!(registry.admin == ctx.sender(), EOwner);
+    kondora::kusd::create_daily_faucet(sponsor, ctx);
+}
 
 public fun create_account(registry: &mut Registry, ctx: &mut TxContext) {
     let owner = ctx.sender();

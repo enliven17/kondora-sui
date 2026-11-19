@@ -20,3 +20,7 @@ Trading transactions are built locally by lib/sui/transactions.ts and lib/trade.
 ## Convex workers
 
 Indexer, creator, oracle and evidence writes are internal Convex functions. Only authenticated deployment operators and configured crons invoke them. Public market and statistics queries remain read-only.
+
+## Daily test-token faucet
+
+The public Convex action faucet.claim accepts only address and welcomeOnly. It sends a fixed 100 test kUSD through the server's dedicated faucet signer. It accepts no arbitrary transaction, amount, contract target or private key. The DailyFaucet Move object enforces the sponsor, a per-address 24-hour cooldown, a one-time welcome payment and an overall 500-claim UTC-day limit. The public faucetStore.status query exposes only the claim time, next eligibility and public digest. Request throttling and a signer lock protect backend resources. This is an anonymous testnet faucet; a request can name a recipient address without proving wallet ownership.

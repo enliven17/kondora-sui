@@ -1,0 +1,13 @@
+{
+  "network": "sui:testnet",
+  "address": "0x682d47fc1c148f96c06fd870cdb619027db8294066705df473af4d49222a1641",
+  "digest": "CJXAo4QBd7YtTHzWn6CRMdibPESnjGkEtdqpsZwqkcE6",
+  "claimedAt": 1795090692090,
+  "nextClaimAt": 1795177092090,
+  "amountKusd": 100,
+  "recipientGasSui": 0,
+  "reconnectBlocked": true,
+  "manualDuplicateBlocked": true,
+  "concurrentDuplicatesBlocked": true,
+  "verifiedAt": "2026-11-19T12:18:19.351Z"
+}

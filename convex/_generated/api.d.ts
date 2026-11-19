@@ -11,6 +11,8 @@
 import type * as creator from "../creator.js";
 import type * as crons from "../crons.js";
 import type * as evidence from "../evidence.js";
+import type * as faucet from "../faucet.js";
+import type * as faucetStore from "../faucetStore.js";
 import type * as health from "../health.js";
 import type * as http from "../http.js";
 import type * as indexer from "../indexer.js";
@@ -30,6 +32,8 @@ declare const fullApi: ApiFromModules<{
   creator: typeof creator;
   crons: typeof crons;
   evidence: typeof evidence;
+  faucet: typeof faucet;
+  faucetStore: typeof faucetStore;
   health: typeof health;
   http: typeof http;
   indexer: typeof indexer;

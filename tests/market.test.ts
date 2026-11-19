@@ -49,9 +49,10 @@ test("transaction builders target only the configured Sui package", () => {
   const call = data.commands[0].MoveCall!;
   assert.equal(call.package, PACKAGE_ID); assert.equal(call.module, "market"); assert.equal(call.function, "withdraw");
 });
-test("all Convex writes and signer actions stay internal", () => {
+test("trading and admin writes stay internal; only the bounded faucet action is public", () => {
   for (const file of fs.readdirSync("convex").filter((name) => name.endsWith(".ts"))) {
     const source = fs.readFileSync(`convex/${file}`, "utf8");
+    if (file === "faucet.ts") { assert(!/\bmutation\s*\(/.test(source)); continue; }
     assert(!/\b(?:mutation|action)\s*\(/.test(source), `Public write in ${file}`);
   }
 });

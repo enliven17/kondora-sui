@@ -2,7 +2,7 @@
 import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import type { Transaction } from "@mysten/sui/transactions";
 import { sui } from "../lib/sui/client";
-export function roleKey(role: "CREATOR" | "ORACLE" | "AUDITOR" | "CRANK") {
+export function roleKey(role: "CREATOR" | "ORACLE" | "AUDITOR" | "CRANK" | "FAUCET") {
   const secret = process.env[`SUI_${role}_SECRET`];
   return secret ? Ed25519Keypair.fromSecretKey(secret) : null;
 }

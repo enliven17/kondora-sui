@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { EnableTrading } from "@/components/bet/enable-trading";
+import { TestFaucet } from "@/components/bet/test-faucet";
 import { TxLink } from "@/components/bet/tx-link";
 import { CategoryThumb } from "@/components/app/category-thumb";
 import { WalletButton } from "@/components/app/wallet-button";
@@ -212,9 +213,11 @@ export function PortfolioView({ markets: initialMarkets, demoPositions, serverNo
 
       {connected && snap && (ready ? <FundsPanel snap={snap} wallet={wallet} onDone={() => void reload()} /> : (
         <Panel className="p-4 sm:p-5">
-          <EnableTrading key={snap.owner} snap={snap} wallet={wallet} onDone={() => void reload()} />
+          <EnableTrading key={snap.owner} snap={snap} wallet={wallet} onDone={() => void reload()} showFaucet={false} />
         </Panel>
       ))}
+
+      <Panel className="p-4 sm:p-5"><TestFaucet wallet={wallet} onDone={() => void reload()} standalone /></Panel>
 
       <Panel as="section" aria-labelledby="positions-title" className="overflow-hidden">
         <PanelHeader id="positions-title" title="Positions">

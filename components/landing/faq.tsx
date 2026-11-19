@@ -36,7 +36,7 @@ const FAQ = [
   },
   {
     q: "Is this real money?",
-    a: "Not yet. Kondora runs on Sui testnet with freely mintable test kUSD from the in-app faucet. Treat every number here as practice.",
+    a: "Not yet. Kondora runs on Sui testnet. Your first connection receives 100 test kUSD automatically; Portfolio offers another 100 every 24 hours. Claims need no signature or gas. Treat every number here as practice.",
   },
 ] as const;
 

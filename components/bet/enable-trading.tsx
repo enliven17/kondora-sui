@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { TxLink } from "./tx-link";
 import { TestFaucet } from "./test-faucet";
 
-export const kUSD_FAUCET = "https://sui.kondora.xyz/portfolio";
+export const kUSD_FAUCET = "/portfolio";
 export const SUI_FAUCET = "https://faucet.sui.io/?network=testnet";
 /** Gas buffer for the initial account and deposit transactions. */
 const MIN_SOL = 0.01;
@@ -34,11 +34,11 @@ export function FaucetLinks({ usdc, sol, className }: { usdc: boolean; sol: bool
       )}
       {usdc && (
         <>
-          You need testnet kUSD to bet.{" "}
-          <a href={kUSD_FAUCET} target="_blank" rel="noopener noreferrer" className={link}>
+          Your first 100 kUSD is sent automatically.{" "}
+          <a href={kUSD_FAUCET} className={link}>
             Open the kUSD faucet
           </a>{" "}
-          Mint free kUSD below.
+          Claim another 100 every 24 hours.
         </>
       )}
     </p>
@@ -57,10 +57,11 @@ function Step({ label, done, note }: { label: string; done: boolean; note: strin
 /**
  * Create the owner-controlled shared Sui account, then deposit test collateral.
  */
-export function EnableTrading({ snap, wallet, onDone }: { snap: AccountSnapshot; wallet: TradeWallet | null; onDone: () => void }) {
+export function EnableTrading({ snap, wallet, onDone, showFaucet = true }: { snap: AccountSnapshot; wallet: TradeWallet | null; onDone: () => void; showFaucet?: boolean }) {
   const walletUsdc = amm.usdc(snap.usdc);
   const balance = amm.usdc(snap.user?.balance ?? 0n);
-  const [amountText, setAmountText] = useState(() => String(Math.floor(Math.min(walletUsdc, 25) * 100) / 100));
+  const [amountText, setAmountText] = useState<string | null>(null);
+  const displayAmount = amountText ?? String(Math.floor(Math.min(walletUsdc, 25) * 100) / 100);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tx, setTx] = useState<TxLinkData | null>(null);
@@ -68,7 +69,7 @@ export function EnableTrading({ snap, wallet, onDone }: { snap: AccountSnapshot;
   const inputId = useId();
 
   const sol = snap.lamports / LAMPORTS_PER_SOL;
-  const amount = Number.parseFloat(amountText) || 0;
+  const amount = Number.parseFloat(displayAmount) || 0;
   const needsSol = sol < MIN_SOL;
   const needsUsdc = walletUsdc <= 0 && balance <= 0;
   const overWallet = amount > walletUsdc;
@@ -128,7 +129,7 @@ export function EnableTrading({ snap, wallet, onDone }: { snap: AccountSnapshot;
           type="number"
           min={0}
           step="1"
-          value={amountText}
+          value={displayAmount}
           onChange={(e) => setAmountText(e.target.value)}
           aria-invalid={overWallet || undefined}
           className="num h-11 w-full min-w-0 bg-transparent px-3 text-lg text-fg focus:outline-none"
@@ -145,7 +146,7 @@ export function EnableTrading({ snap, wallet, onDone }: { snap: AccountSnapshot;
       {balance > 0 && <p className="mt-1 text-xs text-haze">Already in your account: {formatNumber(balance)} kUSD.</p>}
 
       <FaucetLinks usdc={needsUsdc} sol={needsSol} className="mt-3" />
-      <TestFaucet wallet={wallet} onDone={onDone} />
+      {showFaucet && <TestFaucet wallet={wallet} onDone={onDone} />}
 
       <button
         type="button"

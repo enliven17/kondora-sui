@@ -9,6 +9,7 @@ free by the testnet faucet; it does not need to be bought or sent manually.
 | Creator / deployer | `0xd99e726620eece55420d867cb312a8c6beec92825dec9ed1bf9eb9802d2b6fe3` |
 | Oracle / crank | `0x091627e9a72f7f4c96e46fd30bf1e88b0c4f635c6112f840c677e4ac11f78619` |
 | Auditor | `0xa8be7faf34749de75e5f22a4637b787cb51b6e5549cf34dbfce881f9c9f39320` |
+| Daily faucet sponsor | `0x22c0699cac4c2c2231b758074d633a4ab1724dc4cc5dc60f84f4ee33a89f9c0d` |
 
 Use https://faucet.sui.io/?network=testnet or an already funded testnet wallet.
 The official [automation guide](https://faucet.sui.io/how-to-use/) supports direct
@@ -25,10 +26,13 @@ Faucet proof computation can take time or expire; it is not guaranteed funding.
 Initial gas was supplied for deployment and validation. Keep the creator funded
 for new markets and soak wallet funding, the oracle for proposals/finalization,
 and the auditor for challenges. The deployer's UpgradeCap remains local.
+The daily faucet sponsor pays the gas for welcome and daily 100-kUSD grants.
+It was initially funded with 0.3 testnet SUI and can be topped up separately.
 
 Keys are saved in `.keys/sui-deployer.key`, `.keys/sui-oracle.key` and
 `.keys/sui-auditor.key`, and the applicable signer keys are set only in this
 fork's Convex server environment. Never share or commit these files.
+The additional daily faucet key is `.keys/sui-faucet.key`.
 
 ## Shared API budget
 

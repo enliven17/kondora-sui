@@ -20,6 +20,11 @@ evidence-backed oracle proposals, disputes and claims.
 value. It is not Circle USDC. Testnet SUI pays network gas. This is a hackathon
 prototype; see the [risk notes](content/docs/risks.md).
 
+Connect a wallet to receive **100 kUSD automatically**. The Portfolio faucet
+offers another **100 kUSD every 24 hours**, sharing the welcome payment's
+cooldown. These grants need no signature or gas from the recipient; a dedicated
+server signer sponsors them. Deposits and trading still require testnet SUI.
+
 ## How it works
 
 ```mermaid

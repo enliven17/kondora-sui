@@ -1,0 +1,9 @@
+{
+  "packageId": "0x510345e178ab32f583fb16b6f23be8336168e8463b5205d3b38bb4bf9673f8a4",
+  "dailyFaucetId": "0x176bf70e1bae7ba4693098cdb9c780e0bd69c0ca7ec8d4e6254cf12b45352c5b",
+  "sponsor": "0x22c0699cac4c2c2231b758074d633a4ab1724dc4cc5dc60f84f4ee33a89f9c0d",
+  "createDigest": "5VP97zPHk8eqBxK1qUDd57FbZL1BJiwsypbLjrRYkxLR",
+  "amountKusd": 100,
+  "cooldownHours": 24,
+  "configuredAt": "2026-11-19T12:16:39.259Z"
+}

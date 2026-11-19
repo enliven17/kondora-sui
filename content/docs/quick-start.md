@@ -11,7 +11,9 @@ Open Markets and choose Connect wallet. Use a Wallet Standard Sui wallet such as
 
 ## Get test tokens
 
-Get testnet SUI from [the Sui faucet](https://faucet.sui.io/?network=testnet). In the Enable trading panel or Portfolio, choose Mint 1,000 free test kUSD. Approve the faucet transaction in your wallet.
+Your first wallet connection automatically receives 100 test kUSD. No signature or SUI gas is needed for this transfer. In Portfolio, the Daily kUSD faucet offers another 100 kUSD every 24 hours, with a countdown to the next claim. The first gift uses the same cooldown, and reconnecting does not grant another welcome payment.
+
+Get testnet SUI from [the Sui faucet](https://faucet.sui.io/?network=testnet) for deposits and trades. kUSD is a demonstration coin with no monetary value.
 
 ## Enable trading
 

@@ -2,14 +2,20 @@
 
 Validated on 2026-11-19 against the package in `deployments/testnet.json`.
 
-- Fourteen Move unit tests passed, including ownership rejection, oracle authority,
+- Nineteen Move unit tests passed, including ownership rejection, oracle authority,
   slippage rejection, reserve limits, interest, partial close, disputes and claims.
   Liquidity tests cover preserved prices and claims, wrong admin, wrong registry,
   and rejection after the close. The compatible v2 upgrade passed an on-chain
   simulation before being signed and executed.
-- Seven TypeScript tests passed, including 2,000 varied buy/sell rounding checks,
+- Ten TypeScript tests passed, including 2,000 varied buy/sell rounding checks,
   BCS rejection, leverage/reserve caps, configured-package transaction targets
-  and the absence of public Convex write functions.
+  address/cooldown validation and internal-only trading/admin writes. The sole
+  public write action is the bounded daily test-token faucet.
+- Faucet Move tests verify exact 100-kUSD supply, the 24-hour boundary, duplicate
+  and repeated welcome rejection, sponsor authorization and daily budget limits.
+  Real testnet delivery to a wallet with zero SUI succeeded; reconnect, manual
+  repeat and concurrent duplicate requests left its balance at exactly 100 kUSD.
+  Receipts are in `deployments/daily-faucet-smoke-testnet.json`.
 - Typecheck, ESLint, dependency audit and the Next.js production build passed.
 - Real testnet smoke completed through proposal, five-minute dispute window,
   finalization and claim. Public digests are in `deployments/smoke-testnet.json`.
@@ -31,7 +37,11 @@ Validated on 2026-11-19 against the package in `deployments/testnet.json`.
 
 The OWASP review checked shared-account authorization, public/backend write
 boundaries, input limits, secret isolation, dependency audit and response headers.
-Signer actions and storage mutations are internal Convex functions. Browser code
+Trading/admin signer actions and storage mutations are internal Convex functions.
+The anonymous faucet action accepts only a recipient and welcome flag, with a
+fixed on-chain amount, sponsor check, per-address cooldown, overall daily cap,
+request throttling and signer lock. It cannot sign arbitrary user transactions.
+Browser code
 receives only public deployment IDs and URLs. Private local files and soak output
 are excluded from Git and Vercel uploads.
 

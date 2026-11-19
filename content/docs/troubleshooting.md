@@ -11,7 +11,7 @@ Use a Sui Wallet Standard wallet and reload after installation. The application 
 
 ## No test funds
 
-Use the Sui faucet for testnet SUI and the in-app Mint 1,000 free test kUSD button for collateral. Circle USDC and similarly named coins are not accepted by this package.
+Connect a wallet to receive the first 100 kUSD automatically. Portfolio shows the daily faucet and its 24-hour countdown. If a transfer could not be confirmed, retry there; the on-chain cooldown prevents duplicate payments. Faucet claims are sponsored, but deposits and trades need testnet SUI from the Sui faucet. Circle USDC and similarly named coins are not accepted by this package.
 
 ## Setup needs two approvals
 

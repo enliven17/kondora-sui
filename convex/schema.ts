@@ -12,6 +12,7 @@ export const marketStatus = v.union(
 );
 
 export default defineSchema({
+  faucetClaims: defineTable({ address: v.string(), claimedAt: v.number(), nextClaimAt: v.number(), digest: v.optional(v.string()) }).index("by_address", ["address"]),
   evidence: defineTable({ hash: v.string(), bundle: v.string(), t: v.number() }).index("by_hash", ["hash"]),
   markets: defineTable({
     key: v.string(),
