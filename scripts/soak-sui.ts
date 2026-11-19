@@ -8,7 +8,7 @@ import { readAccount as chainReadAccount } from "../lib/account";
 import { poolOf } from "../lib/chain";
 import { amm } from "../lib/kondora";
 import { sui } from "../lib/sui/client";
-import { CLOCK_ID } from "../lib/sui/config";
+import { CLOCK_ID, REGISTRY_ID } from "../lib/sui/config";
 import { readAllMarkets, readSuiMarket as chainReadMarket, toMarketAccount } from "../lib/sui/read";
 import { createMarketTransaction, mintTransaction, newTransaction, setupTransaction, target } from "../lib/sui/transactions";
 
@@ -18,11 +18,15 @@ function option(name: string, fallback: number, min: number, max: number) {
   return value;
 }
 const minutes = option("--minutes", 30, 0.1, 43200);
-const walletCount = Math.floor(option("--wallets", 4, 1, 20));
+const walletCount = Math.floor(option("--wallets", 4, 1, 200));
+const gasPerWallet = BigInt(Math.round(option("--gas-per-wallet", walletCount > 20 ? 0.02 : 0.15, 0.01, 10) * 1e9));
+const setupConcurrency = Math.floor(option("--setup-concurrency", 2, 1, 8));
+const prepareOnly = process.argv.includes("--prepare-only");
 const interval = option("--interval-ms", 2500, 0, 60000);
 const maxRounds = option("--rounds", Number.MAX_SAFE_INTEGER, 1, Number.MAX_SAFE_INTEGER);
 const resumeIndex = process.argv.indexOf("--resume");
 const resumeDir = resumeIndex >= 0 ? process.argv[resumeIndex + 1] : null;
+if (resumeIndex >= 0 && (!resumeDir || resumeDir.startsWith("--"))) throw new Error("--resume requires a .soak/sui-TIMESTAMP directory");
 const run = resumeDir ? path.basename(resumeDir).replace(/^sui-/, "") : new Date().toISOString().replace(/[:.]/g, "-");
 const outDir = path.join(".soak", `sui-${run}`), keyDir = path.join(".keys", `soak-${run}`);
 fs.mkdirSync(outDir, { recursive: true }); fs.mkdirSync(keyDir, { recursive: true });
@@ -33,14 +37,37 @@ const wallets = Array.from({ length: walletCount }, (_, i) => {
   if (resumeDir) return Ed25519Keypair.fromSecretKey(fs.readFileSync(file, "utf8").trim());
   const key = Ed25519Keypair.generate(); fs.writeFileSync(file, key.getSecretKey(), { mode: 0o600 }); return key;
 });
-const report = { network: "sui:testnet", startedAt: new Date().toISOString(), completedAt: "", minutes, walletCount, marketId: "", rounds: 0, transactions: 0, failures: 0, networkRetries: 0, checks: 0, rejectedAttacks: 0, stopped: false, gasMist: "0", errors: [] as string[], latencies: [] as number[] };
+const report = { network: "sui:testnet", startedAt: new Date().toISOString(), completedAt: "", minutes, walletCount, gasPerWallet: String(gasPerWallet), preparedWallets: 0, preparedOnly: prepareOnly, marketId: "", rounds: 0, transactions: 0, failures: 0, networkRetries: 0, checks: 0, rejectedAttacks: 0, stopped: false, gasMist: "0", errors: [] as string[], latencies: [] as number[] };
+const summaryFile = path.join(outDir, "summary.json");
+if (resumeDir) {
+  const previous = JSON.parse(fs.readFileSync(summaryFile, "utf8"));
+  assert.equal(previous.walletCount, walletCount, "Resume requires the original wallet count");
+  report.marketId = previous.marketId;
+}
+const manifest = wallets.map((key, index) => ({ index, address: key.toSuiAddress() }));
+fs.writeFileSync(path.join(outDir, "wallets.json"), JSON.stringify(manifest, null, 2));
+const checkpoint = () => fs.writeFileSync(summaryFile, JSON.stringify(report, null, 2));
+checkpoint();
+async function mapLimited<T, R>(items: T[], concurrency: number, fn: (item: T, index: number) => Promise<R>): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let next = 0, failure: unknown;
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, async () => {
+    while (next < items.length && !failure && !interrupted) {
+      const index = next++;
+      try { results[index] = await fn(items[index], index); } catch (error) { failure = error; }
+    }
+  }));
+  if (failure) throw failure;
+  if (interrupted) throw new Error("Stopped during setup/read checks");
+  return results;
+}
 async function retryRead<T>(fn: () => Promise<T>): Promise<T> {
   for (let attempt = 0; ; attempt++) {
     try { return await fn(); }
     catch (error) {
-      if (attempt >= 5 || !/fetch failed|network|timeout|ECONN|unavailable|DEADLINE/i.test(String(error))) throw error;
+      if (attempt >= 5 || !/fetch failed|network|timeout|ECONN|unavailable|DEADLINE|429|too many requests|rate.?limit|resource.exhausted/i.test(String(error))) throw error;
       report.networkRetries++; console.log(`Read transport retry ${attempt + 1}/5`);
-      await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
+      await new Promise((resolve) => setTimeout(resolve, 3000 * (attempt + 1)));
     }
   }
 }
@@ -61,32 +88,59 @@ async function send(action: string, tx: Transaction, key = donor) {
 }
 try {
   const donorGas = BigInt((await retryRead(() => sui.getBalance({ owner: donor.toSuiAddress() }))).balance.balance);
-  assert(donorGas > (resumeDir ? 50000000n : BigInt(walletCount) * 150_000_000n + 100_000_000n), "Deployer needs 0.15 test SUI per wallet plus 0.1 SUI. Use the Sui faucet first.");
-  if (!resumeDir) {
+  assert(donorGas > 100_000_000n, "Deployer needs at least 0.1 test SUI reserve.");
+  if (!report.marketId) {
   await send("mint-seed", mintTransaction());
   await send("create-soak-market", createMarketTransaction({ question: `Will Sui soak run ${run.slice(0, 16)} complete its checks?`,
     summary: "Automated testnet stress scenario. Not a real-world prediction.", category: "tech", rules: ["Testnet scenario; evidence is the local soak report."],
     resolution: JSON.stringify({ key: `soak-${run}`, tags: ["soak"], sourceName: "Soak runner", sourceUrl: "https://github.com/enliven17/kondora-sui" }),
     closeMs: Date.now() + Math.max(2 * 86400000, Math.ceil(minutes + 20) * 60000), initialPriceBps: 5000, seed: 500_000_000n,
   }));
-  report.marketId = (await readAllMarkets()).at(-1)!.id;
-  } else {
-    report.marketId = JSON.parse(fs.readFileSync(path.join(outDir, "summary.json"), "utf8")).marketId;
-    console.log(`Resuming market ${report.marketId}`);
+  const created = (await retryRead(() => readAllMarkets())).find(m => {
+    try { return JSON.parse(m.resolution).key === `soak-${run}`; } catch { return false; }
+  });
+  assert(created, "Created soak market was not indexed by the RPC");
+  report.marketId = created.id;
+  checkpoint();
   }
-  for (const key of wallets) {
-    const previous = resumeDir ? await readAccount(key.toSuiAddress()) : null;
-    if (previous?.id && (previous.user!.balance > 0n || previous.user!.positions.length > 0)) continue;
-    if (!resumeDir) {
-    const tx = new Transaction(); tx.transferObjects([coinWithBalance({ balance: 150_000_000n })], key.toSuiAddress());
-    await send("fund-gas", tx);
-    await send("mint-collateral", mintTransaction(), key);
-    await send("create-account", setupTransaction(key.toSuiAddress(), null, 0n), key);
+  console.log(`Market ${report.marketId}; preparing ${walletCount} wallets`);
+  const balances = await mapLimited(wallets, setupConcurrency, key => retryRead(() => sui.getBalance({ owner: key.toSuiAddress() })));
+  const funding = wallets.flatMap((key, i) => {
+    const balance = BigInt(balances[i].balance.balance);
+    // New wallets receive the chosen budget. Resumed wallets are topped up only when nearly empty.
+    return balance < (resumeDir ? 5_000_000n : gasPerWallet) ? [{ owner: key.toSuiAddress(), amount: gasPerWallet - balance }] : [];
+  });
+  const requiredGas = funding.reduce((sum, row) => sum + row.amount, 100_000_000n);
+  assert(donorGas > requiredGas, `Need ${Number(requiredGas) / 1e9} test SUI including donor reserve; available ${Number(donorGas) / 1e9}. Resume this run after funding.`);
+  for (let offset = 0; offset < funding.length; offset += 25) {
+    const tx = new Transaction();
+    for (const row of funding.slice(offset, offset + 25)) {
+      tx.transferObjects([coinWithBalance({ balance: row.amount })], row.owner);
     }
-    const account = await readAccount(key.toSuiAddress());
-    assert(account.id);
-    await send("deposit", setupTransaction(key.toSuiAddress(), account.id, 100_000_000n), key);
+    await send(`fund-gas-batch-${offset / 25 + 1}`, tx);
   }
+  await mapLimited(wallets, setupConcurrency, async (key, index) => {
+    let account = await readAccount(key.toSuiAddress());
+    if (!account.id) {
+      const tx = mintTransaction();
+      tx.moveCall({ target: target("create_account"), arguments: [tx.object(REGISTRY_ID)] });
+      await send("mint-and-create-account", tx, key);
+      account = await readAccount(key.toSuiAddress());
+    }
+    assert(account.id);
+    if (account.usdc + account.user!.balance === 0n && account.user!.positions.length === 0) {
+      await send("mint-collateral", mintTransaction(), key);
+      account = await readAccount(key.toSuiAddress());
+    }
+    if (account.user!.balance === 0n && account.user!.positions.length === 0) {
+      await send("deposit", setupTransaction(key.toSuiAddress(), account.id, 100_000_000n), key);
+    }
+    report.preparedWallets++;
+    checkpoint();
+    console.log(`prepared=${report.preparedWallets}/${walletCount} wallet=${index}`);
+  });
+  if (prepareOnly) { console.log("Wallet preparation complete; trading has not started."); }
+  else {
   const deadline = Date.now() + minutes * 60000;
   const baseline = 500_000_000n + BigInt(walletCount) * 1_000_000_000n;
   while (!interrupted && Date.now() < deadline && report.rounds < maxRounds) {
@@ -116,8 +170,8 @@ try {
     }
     const market = await readSuiMarket(report.marketId);
     let total = BigInt(market.vault), yes = 0n, no = 0n, debt = 0n;
-    for (const key of wallets) {
-      const account = await readAccount(key.toSuiAddress());
+    const snapshots = await mapLimited(wallets, setupConcurrency, key => readAccount(key.toSuiAddress()));
+    for (const account of snapshots) {
       total += account.usdc + (account.user?.balance ?? 0n);
       for (const p of account.user!.positions.filter((p) => p.market_id === report.marketId)) { if (p.side === 0) yes += p.shares; else no += p.shares; debt += p.debt; }
     }
@@ -154,9 +208,13 @@ try {
       await send("cleanup-withdraw", tx, key);
     }
   }
+  }
 } catch (error) {
-  report.failures++; report.errors.push(error instanceof Error ? error.message : String(error)); process.exitCode = 1;
-  log({ action: "failure", error: report.errors.at(-1) }); console.error(report.errors.at(-1));
+  if (interrupted) { log({ action: "stopped" }); }
+  else {
+    report.failures++; report.errors.push(error instanceof Error ? error.message : String(error)); process.exitCode = 1;
+    log({ action: "failure", error: report.errors.at(-1) }); console.error(report.errors.at(-1));
+  }
 } finally {
   report.completedAt = new Date().toISOString(); report.stopped = interrupted;
   const latencies = [...report.latencies].sort((a, b) => a - b);

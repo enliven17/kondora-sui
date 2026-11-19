@@ -95,6 +95,8 @@ npm run build
 npm audit
 npm run sui:smoke -- --settlement
 npm run sui:soak -- --minutes 30 --wallets 4 --interval-ms 2500
+# Prepare a reusable 200-wallet set without starting a long test:
+npm run sui:soak -- --wallets 200 --prepare-only
 ```
 
 The smoke test exercises real testnet mint, deposit, opening, partial closing,

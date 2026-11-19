@@ -17,8 +17,8 @@ export async function execute(transaction: Transaction, wallet = localWallet()) 
     for (let attempt = 0; ; attempt++) {
       try { return await fn(); }
       catch (error) {
-        if (attempt >= 3 || !/fetch failed|network|ECONN|timeout|temporar|unavailable|429|503/i.test(String(error))) throw error;
-        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+        if (attempt >= 5 || !/fetch failed|network|ECONN|timeout|temporar|unavailable|429|503|too many requests|rate.?limit|resource.exhausted/i.test(String(error))) throw error;
+        await new Promise((r) => setTimeout(r, 3000 * (attempt + 1)));
       }
     }
   };
