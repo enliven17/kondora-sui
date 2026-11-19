@@ -14,8 +14,8 @@ import { TxLink } from "./tx-link";
 import { TestFaucet } from "./test-faucet";
 
 export const kUSD_FAUCET = "https://sui.kondora.xyz/portfolio";
-export const SOL_FAUCET = "https://faucet.sui.io/?network=testnet";
-/** Rent for the account, session token and delegation buffers, plus the session top-up. */
+export const SUI_FAUCET = "https://faucet.sui.io/?network=testnet";
+/** Gas buffer for the initial account and deposit transactions. */
 const MIN_SOL = 0.01;
 
 export function FaucetLinks({ usdc, sol, className }: { usdc: boolean; sol: boolean; className?: string }) {
@@ -26,7 +26,7 @@ export function FaucetLinks({ usdc, sol, className }: { usdc: boolean; sol: bool
       {sol && (
         <>
           Your wallet needs testnet SUI for fees.{" "}
-          <a href={SOL_FAUCET} target="_blank" rel="noopener noreferrer" className={link}>
+          <a href={SUI_FAUCET} target="_blank" rel="noopener noreferrer" className={link}>
             Get testnet SUI
           </a>
           {usdc ? " " : ""}
@@ -55,8 +55,7 @@ function Step({ label, done, note }: { label: string; done: boolean; note: strin
 }
 
 /**
- * The step before the first bet: create the account, deposit, make a session key and
- * move the account into the rollup. One wallet approval.
+ * Create the owner-controlled shared Sui account, then deposit test collateral.
  */
 export function EnableTrading({ snap, wallet, onDone }: { snap: AccountSnapshot; wallet: TradeWallet | null; onDone: () => void }) {
   const walletUsdc = amm.usdc(snap.usdc);
@@ -109,7 +108,7 @@ export function EnableTrading({ snap, wallet, onDone }: { snap: AccountSnapshot;
         <div className="flex items-baseline justify-between gap-3">
           <dt className="text-muted">Wallet</dt>
           <dd className="num text-fg/85">
-            {formatNumber(walletUsdc)} kUSD, {sol.toFixed(3)} SOL
+            {formatNumber(walletUsdc)} kUSD, {sol.toFixed(3)} SUI
           </dd>
         </div>
       </dl>

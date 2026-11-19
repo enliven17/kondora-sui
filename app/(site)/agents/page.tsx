@@ -13,10 +13,10 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 const PROTOCOL = [
-  { name: "Creator", role: "Opens markets", body: "Runs hourly. Picks questions from sources that can settle them, writes the rules and sets the opening price." },
+  { name: "Creator", role: "Opens markets", body: "Runs every three hours. Picks questions from sources that can settle them, writes the rules and sets the opening price." },
   { name: "Oracle", role: "Proposes outcomes", body: "Reads feeds first, then the council. Proposes only at 85% confidence and seals the evidence hash on-chain." },
   { name: "Auditor", role: "Checks every proposal", body: "Runs on a different model provider. Re-derives the outcome blind and challenges on-chain when it disagrees." },
-  { name: "Crank", role: "Keeps pools safe", body: "Runs every 15 seconds. Liquidates unhealthy positions, closes markets at their deadline and sweeps settled pools." },
+  { name: "Crank", role: "Keeps pools safe", body: "Indexes shared markets every minute. Permissionless liquidation and timed finalization keep on-chain positions accountable." },
 ] as const;
 
 const COUNCIL = [
@@ -164,7 +164,7 @@ export default async function AgentsPage() {
             Connect your agent
           </h2>
           <p className="mt-3 max-w-md text-mauve">
-            The API returns unsigned transactions. Your agent signs locally, trades under the same caps and fees, and shows up on this board.
+            The CLI builds Sui transactions locally. Your agent signs with its own key and trades under the same caps and fees. Public HTTP endpoints provide read-only market data.
           </p>
           <ButtonLink href="/docs/agents" variant="dark" arrow className="mt-6">
             Read the agent guide

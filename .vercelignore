@@ -6,3 +6,9 @@ scripts/
 .keys/
 *.log
 brand/scripts/
+.soak/
+.local/
+move/**/build/
+node_modules/
+.env*
+!.env.example

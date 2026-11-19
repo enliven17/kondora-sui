@@ -1,5 +1,5 @@
-// Same API as lib/trade.ts and lib/account.ts, loaded on first call. Trading code (spl-token,
-// the IDL error table, session keys, transaction builders) is only needed once a wallet acts,
+// Same API as lib/trade.ts and lib/account.ts, loaded on first call. Sui trading code
+// and transaction builders are only needed once a wallet acts,
 // so it stays out of the market and portfolio first-load JS. Types still come from the real modules.
 
 import type * as Account from "./account";

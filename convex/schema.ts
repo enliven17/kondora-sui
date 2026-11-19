@@ -12,6 +12,7 @@ export const marketStatus = v.union(
 );
 
 export default defineSchema({
+  evidence: defineTable({ hash: v.string(), bundle: v.string(), t: v.number() }).index("by_hash", ["hash"]),
   markets: defineTable({
     key: v.string(),
     chainId: v.optional(v.string()),

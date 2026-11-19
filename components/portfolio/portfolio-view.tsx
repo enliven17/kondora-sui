@@ -30,7 +30,7 @@ import { type PositionRow, PositionsTable } from "./positions-table";
 const noopSubscribe = () => () => {};
 
 /** Chain position (micro units) to the UI position (whole kUSD). */
-function toPosition(p: PositionData, feeBps: number): Position {
+function toPosition(p: PositionData, feeBps: number, closeTime?: number): Position {
   const margin = amm.usdc(p.margin);
   const debt = amm.usdc(p.debt);
   const shares = amm.usdc(p.shares);
@@ -41,7 +41,7 @@ function toPosition(p: PositionData, feeBps: number): Position {
     shares,
     margin,
     debt,
-    accrued: amm.usdc(p.accrued),
+    accrued: amm.usdc(p.accrued) + debt * 0.0002 * Math.max(0, Math.min(Date.now() / 1000, closeTime ?? Infinity) - Number(p.last_accrual)) / 3600,
     entryPrice: shares > 0 ? spent / shares : 0,
     leverage: margin > 0 ? (margin + debt) / margin : 1,
     openedAt: Number(p.opened_at),
@@ -65,7 +65,7 @@ function toRow(position: Position, market: Market, live: LiveMarket | undefined,
   const key = `${position.marketId}:${position.side}`;
   const mark = settledMark(position, market, live);
   if (mark !== null) {
-    const value = position.shares * mark;
+    const value = Math.max(0, position.shares * mark - position.debt - position.accrued);
     const pnl = value - position.margin;
     return {
       key,
@@ -144,7 +144,7 @@ export function PortfolioView({ markets: initialMarkets, demoPositions, serverNo
       const m = byId(id);
       const live = lives[id];
       if (!m) return [];
-      return [toRow(toPosition(p, live?.account.params.fee_bps ?? 50), m, live, false)];
+      return [toRow(toPosition(p, live?.account.params.fee_bps ?? 50, live ? Number(live.account.close_time) : m.closeTime), m, live, false)];
     });
   }, [demo, demoPositions, chainPositions, known, extra, lives]);
 

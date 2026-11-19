@@ -1,0 +1,42 @@
+{
+  "network": "testnet",
+  "completedAt": "2026-11-19T11:11:45.417Z",
+  "marketId": "0xa7387640547d4ee1e6e59eaa9e2be50ceda64dd2e91a779c8b0b92707f1c1662",
+  "unauthorizedWithdrawalRejected": true,
+  "reservesVerified": true,
+  "settlement": true,
+  "receipts": [
+    {
+      "action": "mint",
+      "digest": "968smGfztkmaNRiD1SQGb2hrhpWHZRYGWnLqSwjRBv8P"
+    },
+    {
+      "action": "create-account",
+      "digest": "AbLKnLu5Xh8rM3FGP9e6jTYLaPx4UYfgQJnrodnLGSix"
+    },
+    {
+      "action": "deposit",
+      "digest": "6fabVWVjtWWmKAtJCHptv67YxGKgVxPt1gboQeSjvPF2"
+    },
+    {
+      "action": "create-market",
+      "digest": "AVoCpW3RbwV56PL6a8jsAnqDM3HGTxYdNVQJPNXbZcUb"
+    },
+    {
+      "action": "open-yes",
+      "digest": "ESBfMyDgzhD63ann38bw46sqyvnPrctf3fMSvhcEfaP9"
+    },
+    {
+      "action": "partial-close",
+      "digest": "3fsTRPKNKTnBQNM54p8RTHyHKeY5pmP89Su79hxCCzdn"
+    },
+    {
+      "action": "withdraw",
+      "digest": "3W6FUrAqd6uJyG5zZ7GbD24ZMXarzfp5mHGnaLUJdsBv"
+    },
+    {
+      "action": "claim",
+      "digest": "5QYJisvpmH3V254i8gtXcwdWuxD2tpBZvqYGtx3NRrtW"
+    }
+  ]
+}

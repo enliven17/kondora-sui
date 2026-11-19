@@ -6,6 +6,11 @@ export function localWallet() {
   const secret = process.env.SUI_PRIVATE_KEY || fs.readFileSync(".keys/sui-deployer.key", "utf8").trim();
   return Ed25519Keypair.fromSecretKey(secret);
 }
+export function oracleWallet() {
+  const file = ".keys/sui-oracle.key";
+  const secret = process.env.SUI_ORACLE_SECRET || (fs.existsSync(file) ? fs.readFileSync(file, "utf8").trim() : null);
+  return secret ? Ed25519Keypair.fromSecretKey(secret) : localWallet();
+}
 export async function execute(transaction: Transaction, wallet = localWallet()) {
   transaction.setSenderIfNotSet(wallet.toSuiAddress());
   const retryNetwork = async <T>(fn: () => Promise<T>): Promise<T> => {

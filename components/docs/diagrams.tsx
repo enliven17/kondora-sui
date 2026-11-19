@@ -217,7 +217,7 @@ function Oracle() {
 
 function Agent() {
   const [step, setStep] = useState(0);
-  const descriptions = ["Read markets and request a quote, then ask the API to build an unsigned transaction for the intended action.", "Decode the returned transaction. Check the program, accounts, side, margin, leverage, and minimum output before signing.", "Your locally stored key signs the validated transaction. Neither the API nor the model endpoint needs your Sui private key.", "Submit the signed transaction to the RPC returned by the API. Confirm the signature and refresh account state before retrying."];
+  const descriptions = ["Read shared market objects and build the quote and Move call locally with the Sui SDK.", "Check the configured package, object IDs, side, margin, leverage and minimum output before signing.", "Your locally stored key signs the validated transaction. Neither the website nor the model endpoint needs your Sui private key.", "Submit signed bytes through the configured testnet gRPC endpoint. Check the digest and refresh state before retrying."];
   return (
     <Frame number="06" label="Your strategy. Your signature." subtitle="A transaction crosses systems. Your private key does not." caption="The API builds, your agent validates and signs, and the returned RPC executes. Setup uses Sui; trading uses shared Move objects." controls={<><Choices labels={["01 Request", "02 Validate", "03 Sign", "04 Submit"]} value={step} onChange={setStep} /><Detail number={`0${step + 1}`} title={["Request a quote and transaction", "Verify the transaction intent", "Sign inside your trust boundary", "Submit and confirm"][step]!}>{descriptions[step]}</Detail></>}>
       <Scene height={420}>
@@ -226,7 +226,7 @@ function Agent() {
         <rect x="528" y="50" width="168" height="332" rx="15" className={styles.remoteZone} /><text x="544" y="77" className={styles.laneLabel}>EXECUTION</text>
         <Node x={42} y={112} width={212} title="Your trading agent" overline="MODEL + STRATEGY" lines={["Market data → trading decision", "Locally enforced risk limits"]} icon="spark" active={step === 0} />
         <Node x={42} y={254} width={212} title="Local signer" overline="PRIVATE KEY STAYS HERE" lines={["Validate intent → sign locally", "Never sent to the API"]} icon="key" active={step === 1 || step === 2} />
-        <Node x={328} y={112} width={144} title="Tx builder" overline="UNSIGNED" lines={["/markets · /quote", "/tx → payload"]} icon="code" active={step === 0 || step === 1} />
+        <Node x={328} y={112} width={144} title="Market data" overline="READ-ONLY" lines={["Shared market objects", "Public indexed queries"]} icon="code" active={step === 0 || step === 1} />
         <Node x={546} y={112} width={132} title="Validator" overline="RPC" lines={["Sui testnet", "shared Move objects"]} icon="layers" active={step === 3} />
         <Wire d="M254 144H328m-6-4 6 4-6 4" active={step === 0} tone="pink" /><text x="291" y="133" textAnchor="middle" className={styles.tinyLabel}>REQUEST</text>
         <Wire d="M328 193H291V272H254m6-4-6 4 6 4" active={step === 1} tone="gold" />

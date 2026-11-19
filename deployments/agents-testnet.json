@@ -1,0 +1,17 @@
+{
+  "creator": "0xd99e726620eece55420d867cb312a8c6beec92825dec9ed1bf9eb9802d2b6fe3",
+  "oracle": "0x091627e9a72f7f4c96e46fd30bf1e88b0c4f635c6112f840c677e4ac11f78619",
+  "auditor": "0xa8be7faf34749de75e5f22a4637b787cb51b6e5549cf34dbfce881f9c9f39320",
+  "crank": "0x091627e9a72f7f4c96e46fd30bf1e88b0c4f635c6112f840c677e4ac11f78619",
+  "providerVariables": [
+    "GEMINI_API_KEY",
+    "GEMINI_API_KEYS",
+    "GEMINI_MODELS",
+    "GROQ_API_KEY",
+    "GROQ_API_KEYS",
+    "TOKEN_HARBOR_API_KEY",
+    "TOKEN_HARBOR_BASE_URL",
+    "TOKEN_HARBOR_MODEL"
+  ],
+  "configuredAt": "2026-11-19T11:12:57.299Z"
+}

@@ -16,7 +16,7 @@ import { formatCents, formatLeverage, formatNumber, formatPct, formatUsd, format
 import { amm } from "@/lib/kondora";
 import { type CapParams, type CapReason, leverageCap, maxFeasibleLeverage, maxFeasibleMargin, PROTOCOL, quoteBet, sidePrice } from "@/lib/leverage";
 import type { TxLink as TxLinkData } from "@/lib/trade";
-import { enableTrading, placeBet } from "@/lib/trade-lazy";
+import { placeBet } from "@/lib/trade-lazy";
 import type { Market, Side } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { BetConfirmation, type ConfirmedBet } from "./bet-confirmation";
@@ -61,7 +61,7 @@ export function BetPanel({ market, initialSide = "yes", initialAmount = 5, serve
   const [error, setError] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState<ConfirmedBet | null>(null);
   const [errorTx, setErrorTx] = useState<TxLinkData | null>(null);
-  const [renewing, setRenewing] = useState(false);
+
   const account = useKondoraAccount();
   const { snap, wallet, ready, reload, connected } = account;
   const live = useLiveMarket(market.id);
@@ -167,16 +167,6 @@ export function BetPanel({ market, initialSide = "yes", initialAmount = 5, serve
       signature: result.tx.signature,
       explorer: result.tx.explorer,
     });
-  };
-
-  const renewSession = async () => {
-    if (!wallet || !snap || renewing) return;
-    setRenewing(true);
-    setError(null);
-    const result = await enableTrading({ wallet, snap, deposit: 0 });
-    setRenewing(false);
-    void reload();
-    if (!result.ok) setError(result.error);
   };
 
   const yes = side === "yes";
@@ -366,7 +356,7 @@ export function BetPanel({ market, initialSide = "yes", initialAmount = 5, serve
               )}
             >
               {pending ? (
-                snap.session ? "Placing" : "Approve in your wallet"
+                "Approve in your wallet"
               ) : !live ? (
                 onChain ? "Loading pool" : "Demo market"
               ) : blocked ? (
@@ -384,20 +374,8 @@ export function BetPanel({ market, initialSide = "yes", initialAmount = 5, serve
                   Add funds
                 </Link>
               </p>
-            ) : snap.session ? (
-              <p className="text-center text-[11px] text-haze">Signed by your session key. No wallet popup.</p>
             ) : (
-              <p className="text-center text-[11px] text-haze">
-                Session key expired, so your wallet signs each bet.{" "}
-                <button
-                  type="button"
-                  onClick={renewSession}
-                  disabled={renewing}
-                  className="font-semibold text-acc underline decoration-acc/30 underline-offset-4 disabled:opacity-50"
-                >
-                  {renewing ? "Renewing" : "Renew for 24h"}
-                </button>
-              </p>
+              <p className="text-center text-[11px] text-haze">Approve each bet in your Sui wallet.</p>
             )}
           </>
         )}

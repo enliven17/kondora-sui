@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { execute, localWallet } from "./wallet";
+import { execute, localWallet, oracleWallet } from "./wallet";
 import { readAccount } from "../lib/account";
 import { readSuiMarket } from "../lib/sui/read";
 import { CLOCK_ID } from "../lib/sui/config";
@@ -11,7 +11,7 @@ export async function resumeSettlement() {
   const bundle = JSON.parse(evidence) as { marketId: string; receipts: { action: string; digest: string }[] };
   const receipts = [...bundle.receipts];
   const key = localWallet(), owner = key.toSuiAddress();
-  const send = async (action: string, tx: Parameters<typeof execute>[0]) => { const result = await execute(tx, key); receipts.push({ action, digest: result.digest }); console.log(`${action}: ${result.digest}`); };
+  const send = async (action: string, tx: Parameters<typeof execute>[0]) => { const result = await execute(tx, action === "propose" ? oracleWallet() : key); receipts.push({ action, digest: result.digest }); console.log(`${action}: ${result.digest}`); };
   const waitUntil = async (time: number) => { while (Date.now() < time) { console.log(`Settlement wait: ${Math.ceil((time - Date.now()) / 1000)}s`); await new Promise((r) => setTimeout(r, Math.min(20000, time - Date.now()))); } };
   let market = await readSuiMarket(bundle.marketId);
   if (market.state === 0) {

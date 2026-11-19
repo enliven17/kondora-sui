@@ -5,7 +5,7 @@ export const SUI_GRAPHQL = "https://graphql.testnet.sui.io/graphql";
 export async function tradeEvents(cursor: string | null = null) {
   const response = await fetch(SUI_GRAPHQL, {
     method: "POST", headers: { "Content-Type": "application/json" }, signal: AbortSignal.timeout(20000),
-    body: JSON.stringify({ query: `query($type:String!,$cursor:String){events(filter:{type:$type},first:100,after:$cursor){pageInfo{hasNextPage endCursor} nodes{contents{bcs} transaction{digest} sequenceNumber}}}`,
+    body: JSON.stringify({ query: `query($type:String!,$cursor:String){events(filter:{type:$type},first:50,after:$cursor){pageInfo{hasNextPage endCursor} nodes{contents{bcs} transaction{digest} sequenceNumber}}}`,
       variables: { type: `${PACKAGE_ID}::market::TradeEvent`, cursor } }),
   });
   if (!response.ok) throw new Error(`Sui event query: ${response.status}`);

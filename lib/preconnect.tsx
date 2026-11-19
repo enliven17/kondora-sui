@@ -29,7 +29,7 @@ export function PreconnectConvex() {
   return <Preconnect urls={[process.env.NEXT_PUBLIC_CONVEX_URL]} />;
 }
 
-/** Sui base RPC and the Ephemeral Rollup: only routes that read live chain state (market detail, portfolio). */
+/** Sui gRPC: routes that read live market and account state. */
 export function PreconnectChain() {
   return <Preconnect urls={[SUI_RPC]} />;
 }

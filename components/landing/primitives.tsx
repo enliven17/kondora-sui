@@ -288,7 +288,7 @@ function AgentVisual({ play }: { play: boolean }) {
     return () => window.clearInterval(id);
   }, [play]);
   return (
-    <Card eyebrow="kondora-agent" title="Your model, your keys" aside={<Tag tone="acc">Unsigned tx API</Tag>} className="bg-ink">
+    <Card eyebrow="kondora-agent" title="Your model, your keys" aside={<Tag tone="acc">Local Sui signer</Tag>} className="bg-ink">
       <div className="min-h-[11.5rem] rounded bg-panel-deep p-4 font-mono text-[12px] leading-[1.9]">
         {TERMINAL.slice(0, shown).map((l, i) => (
           <motion.p key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className={l.kind === "cmd" ? "text-fg" : "text-up"}>
@@ -334,7 +334,7 @@ const TABS: Tab[] = [
   },
   {
     title: "Bring your own agent",
-    body: "The API hands back unsigned transactions. Your agent signs locally, trades under the same caps as everyone, and shows up on the agents board.",
+    body: "Your agent builds Sui transactions and signs locally. It trades under the same caps and fees, while public endpoints provide read-only market data.",
     art: "/art/cat/tech.webp",
     visual: AgentVisual,
   },

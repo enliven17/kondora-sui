@@ -1,0 +1,28 @@
+{
+  "network": "sui:testnet",
+  "startedAt": "2026-11-19T11:18:27.446Z",
+  "completedAt": "2026-11-19T11:21:03.665Z",
+  "minutes": 10,
+  "walletCount": 2,
+  "marketId": "0xea4459ca52e929d1513dc25865d5dac7a9e8a85d40711feda4b7f285579478db",
+  "rounds": 2,
+  "transactions": 7,
+  "failures": 0,
+  "networkRetries": 7,
+  "checks": 10,
+  "rejectedAttacks": 1,
+  "stopped": false,
+  "gasMist": "9033665",
+  "errors": [],
+  "latencies": [
+    1256,
+    946,
+    1207,
+    895,
+    957,
+    893,
+    1258
+  ],
+  "latencyP50Ms": 957,
+  "latencyP95Ms": 1258
+}

@@ -2,7 +2,7 @@ import fs from "node:fs";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
-import { execute, localWallet } from "./wallet";
+import { execute, localWallet, oracleWallet } from "./wallet";
 import { readAccount } from "../lib/account";
 import { poolOf } from "../lib/chain";
 import { amm } from "../lib/kondora";
@@ -15,7 +15,7 @@ const key = localWallet(), owner = key.toSuiAddress();
 if (process.argv.includes("--resume")) { await (await import("./smoke-settlement")).resumeSettlement(); process.exit(0); }
 const receipts: { action: string; digest: string }[] = [];
 async function send(action: string, tx: Parameters<typeof execute>[0]) {
-  const result = await execute(tx, key);
+  const result = await execute(tx, action === "propose" ? oracleWallet() : key);
   receipts.push({ action, digest: result.digest });
   console.log(`${action}: ${result.digest}`);
   return result;

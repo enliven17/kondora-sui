@@ -1,5 +1,5 @@
 import { bcs } from "@mysten/sui/bcs";
-import type { SuiClientTypes } from "@mysten/sui/client";
+import { ObjectError } from "@mysten/sui/client";
 import type { MarketAccount } from "../kondora";
 import { sui } from "./client";
 import { COIN_TYPE, PACKAGE_ID, REGISTRY_ID, SUI_CONFIGURED } from "./config";
@@ -32,23 +32,19 @@ export async function readAllMarkets(): Promise<SuiMarket[]> {
 export async function readTradingAccount(owner: string) {
   const registry = await readRegistry();
   if (BigInt(registry.accounts.size) === 0n) return null;
-  // Listing the bounded table names distinguishes absence from an RPC failure.
-  let cursor: string | null = null;
-  do {
-    const page: SuiClientTypes.ListDynamicFieldsResponse = await sui.listDynamicFields({ parentId: registry.accounts.id, cursor, limit: 100 });
-    for (const field of page.dynamicFields) {
-      if (bcs.Address.parse(field.name.bcs) !== owner) continue;
-      const { dynamicField } = await sui.getDynamicField({ parentId: registry.accounts.id, name: field.name });
-      const id = bcs.Address.parse(dynamicField.value.bcs);
-      const { object } = await sui.getObject({ objectId: id, include: { content: true } });
-      if (object.type !== `${PACKAGE_ID}::market::Account`) throw new Error("Unexpected account type");
-      const account = AccountBCS.parse(object.content);
-      if (account.owner !== owner) throw new Error("Account owner mismatch");
-      return account;
-    }
-    cursor = page.hasNextPage ? page.cursor : null;
-  } while (cursor);
-  return null;
+  try {
+    const { dynamicField } = await sui.getDynamicField({ parentId: registry.accounts.id,
+      name: { type: "address", bcs: bcs.Address.serialize(owner).toBytes() } });
+    const id = bcs.Address.parse(dynamicField.value.bcs);
+    const { object } = await sui.getObject({ objectId: id, include: { content: true } });
+    if (object.type !== `${PACKAGE_ID}::market::Account`) throw new Error("Unexpected account type");
+    const account = AccountBCS.parse(object.content);
+    if (account.owner !== owner) throw new Error("Account owner mismatch");
+    return account;
+  } catch (error) {
+    if (error instanceof ObjectError && error.reason === "notFound") return null;
+    throw error;
+  }
 }
 export function toMarketAccount(m: SuiMarket): MarketAccount {
   return {
