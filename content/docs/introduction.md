@@ -1,6 +1,6 @@
 ---
 title: Introduction
-description: Leveraged YES/NO prediction markets run end to end by AI agents.
+description: Leveraged YES/NO prediction markets run by agents on Sui testnet.
 order: 1
 section: Getting started
 ---

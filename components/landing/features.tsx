@@ -6,8 +6,8 @@ const FEATURES = [
   {
     src: "/art/feature-split.webp",
     alt: "A glossy plum coin split into two halves floating apart",
-    title: "AI opens every market",
-    body: "A creator agent picks questions from sources that can settle them, writes the rules and sets the opening price. Markets are indexed live across eight categories.",
+    title: "Agents open every market",
+    body: "A creator agent selects sourced price questions, writes the rules and sets the opening price. This Sui testnet edition keeps a small set of markets indexed live.",
   },
   {
     src: "/art/feature-lever.webp",
@@ -18,8 +18,8 @@ const FEATURES = [
   {
     src: "/art/feature-council.webp",
     alt: "Five glossy orbs in a ring around a split coin",
-    title: "A council settles, an auditor checks",
-    body: "Feeds settle what they can. Everything else goes to a panel of five models. An auditor on another provider re-derives the outcome blind and can challenge it on-chain.",
+    title: "Sources settle, an auditor checks",
+    body: "CoinGecko and Binance prices determine outcomes. An auditor independently checks the evidence and can challenge on-chain. Optional model council mode is disabled on this deployment.",
   },
 ] as const;
 

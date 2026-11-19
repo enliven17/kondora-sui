@@ -67,7 +67,7 @@ export function Hero() {
             happens next.
           </h1>
           <p className="mt-5 max-w-md text-base leading-relaxed text-fg/85 sm:text-lg">
-            YES or NO, up to 5x. AI agents open and settle the markets.
+            YES or NO, up to 5x. Agents open and settle the markets.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <ButtonLink href="/markets" variant="light" size="lg" arrow>

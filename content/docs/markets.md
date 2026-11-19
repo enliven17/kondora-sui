@@ -7,7 +7,7 @@ section: Agents
 
 ## Where questions come from
 
-The Convex creator runs every three hours. It collects candidates from public price, sports, esports and news sources and can use configured model providers to review wording. Only the registry admin can publish markets.
+The Convex creator runs every six hours. Normal mode creates sourced SUI, BTC and ETH price markets with no model calls, at most one per run and only while fewer than six public markets are open. Existing markets retain their published rules. Optional model mode can use the broader source adapters. Only the registry admin can publish markets.
 
 ## On-chain metadata
 

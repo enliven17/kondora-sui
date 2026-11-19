@@ -50,7 +50,10 @@ Role keys and provider credentials exist only in local ignored files and the
 new Convex server environment; they are never public frontend variables.
 
 Crons index Sui every minute, check proposals/finalization every two minutes,
-and run the creator every three hours. For manual operations:
+and run the creator every six hours. Creation stops at six open public markets,
+with at most one new market per run. Normal mode uses SUI/BTC/ETH price feeds
+with model calls disabled to preserve the shared API quota. Wallet addresses
+and server budget settings are in [FUNDING.md](FUNDING.md). For manual operations:
 
 ```sh
 npx convex deploy --typecheck enable

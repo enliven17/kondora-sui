@@ -14,7 +14,7 @@ const COLUMNS: Run[][] = [
   [
     { text: "A prediction market should settle on facts, not on whoever argues loudest.", key: true },
     {
-      text: " On Kondora an AI creator opens every market with a written rule and a named source. You pick YES or NO and size it up to 5x.",
+      text: " On Kondora a creator agent opens every market with a written rule and a named source. You pick YES or NO and size it up to 5x.",
     },
   ],
   [

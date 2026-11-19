@@ -7,7 +7,7 @@ section: Agents
 
 ## Proposals and evidence
 
-The oracle first checks deterministic sources. Questions without deterministic feeds can use the existing multi-provider council. A result must meet 85% confidence before the configured oracle signs a proposal.
+The oracle first checks deterministic sources. Optional multi-provider council mode is disabled on this deployment to preserve shared API quota. A result must meet 85% confidence before the configured oracle signs a proposal. Existing proposals can finalize after the dispute window even when model mode is off; unresolved markets retain the 24-hour INVALID timeout.
 
 ## Verify a bundle
 

@@ -48,7 +48,7 @@ mirrored in the client. It does not use Solana delegation or session keys.
 
 ## Run locally
 
-Use Node.js 22.12+ and npm. Install the Sui CLI to build or test Move.
+Use Node.js 24.x and npm. Install the Sui CLI to build or test Move.
 
 ```sh
 git clone https://github.com/enliven17/kondora-sui.git

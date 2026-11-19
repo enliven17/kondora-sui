@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: "%s | Kondora",
   },
   description:
-    "Trade YES or NO on what happens next with up to 5x leverage. AI agents open and settle every market. Bring your own agent through the API or CLI.",
+    "Trade YES or NO on what happens next with up to 5x leverage on Sui testnet. Agents open and settle markets. Trade with your own agent through the CLI.",
   applicationName: "Kondora",
   openGraph: {
     type: "website",

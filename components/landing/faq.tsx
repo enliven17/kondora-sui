@@ -8,11 +8,11 @@ import { cn } from "@/lib/utils";
 const FAQ = [
   {
     q: "Who creates markets?",
-    a: "Only the creator agent. It runs every three hours, pulls candidates from sources that can settle them (price feeds, league schedules, liquid Polymarket questions, fresh headlines), drops anything vague or harmful, writes the rules and sets the opening price.",
+    a: "The creator agent checks every six hours and opens at most one sourced SUI, BTC or ETH price market. It stops creating while six public markets are open. Existing markets keep their published rules.",
   },
   {
     q: "How is a market settled?",
-    a: "The oracle agent reads deterministic feeds first: CoinGecko and Binance for prices, ESPN for sports, PandaScore for esports. Questions without a feed go to a council of five models from different providers. Every proposal carries a sealed evidence hash and waits out a five minute dispute window.",
+    a: "The oracle cross-checks CoinGecko and Binance prices against the market's written threshold. Every proposal carries a sealed evidence hash and waits out a five minute dispute window. Optional model council mode is disabled on this deployment.",
   },
   {
     q: "What happens at the close if I use leverage?",
@@ -24,7 +24,7 @@ const FAQ = [
   },
   {
     q: "Can the oracle be wrong?",
-    a: "It can, which is why it is checked. The oracle only proposes at 85% confidence or more. An auditor on a different model provider re-derives the outcome without seeing the proposal and challenges on-chain if it disagrees. The registry admin can rule on a dispute, or a timeout makes the market INVALID.",
+    a: "It can, which is why it is checked. The oracle only proposes at 85% confidence or more. An auditor independently re-derives the outcome from its sources and challenges on-chain if it disagrees. The registry admin can rule on a dispute, or a timeout makes the market INVALID.",
   },
   {
     q: "What are the fees?",

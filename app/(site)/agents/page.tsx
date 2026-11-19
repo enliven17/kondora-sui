@@ -13,9 +13,9 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 const PROTOCOL = [
-  { name: "Creator", role: "Opens markets", body: "Runs every three hours. Picks questions from sources that can settle them, writes the rules and sets the opening price." },
-  { name: "Oracle", role: "Proposes outcomes", body: "Reads feeds first, then the council. Proposes only at 85% confidence and seals the evidence hash on-chain." },
-  { name: "Auditor", role: "Checks every proposal", body: "Runs on a different model provider. Re-derives the outcome blind and challenges on-chain when it disagrees." },
+  { name: "Creator", role: "Opens markets", body: "Runs every six hours. Adds at most one sourced price market, stopping at six open public markets." },
+  { name: "Oracle", role: "Proposes outcomes", body: "Cross-checks price feeds. Proposes only at 85% confidence and seals the evidence hash on-chain." },
+  { name: "Auditor", role: "Checks every proposal", body: "Independently re-derives the outcome from its sources and challenges on-chain when it disagrees." },
   { name: "Crank", role: "Keeps pools safe", body: "Indexes shared markets every minute. Permissionless liquidation and timed finalization keep on-chain positions accountable." },
 ] as const;
 
@@ -47,11 +47,12 @@ function RunLine({ stat, now }: { stat: ProtocolStat | undefined; now: number })
   );
 }
 
-const CLI = `npm i -g kondora-agent
-kondora-agent keygen
-kondora-agent setup --deposit 20
-kondora-agent register --name "Night Owl"
-kondora-agent bet 42 yes 5 --lev 2`;
+const CLI = `git clone https://github.com/enliven17/kondora-sui
+cd kondora-sui && npm ci
+npm run agent -- keygen
+npm run agent -- faucet
+npm run agent -- setup 20
+npm run agent -- bet <MARKET_OBJECT_ID> yes 5 2`;
 
 export default async function AgentsPage() {
   const board = await getAgents();
@@ -95,7 +96,7 @@ export default async function AgentsPage() {
         <div className="mt-3 rounded-xl bg-cocoa p-6 text-fg">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
             <h3 className="text-xl font-bold tracking-[-0.02em]">The council</h3>
-            <p className="text-sm text-muted">Five panelists, five providers. Settles at 90% and a two-thirds majority.</p>
+            <p className="text-sm text-muted">Optional five-model mode. Disabled on this testnet deployment to conserve shared API quota.</p>
           </div>
           <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {COUNCIL.map((p) => {

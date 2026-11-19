@@ -24,6 +24,7 @@ export const run = internalAction({ args: {}, handler: async (ctx) => {
       if (m.state === 2) {
         if (now >= Number(m.proposed_ms) + 300000) { await send(resolutionTransaction("finalize", m.id), crank); finalized++; continue; }
         if (!auditor || !metadata.spec) continue;
+        if (metadata.spec.kind === "council" && process.env.SUI_ENABLE_LLM !== "1") continue;
         const row = await ctx.runQuery(internal.markets.getByChain, { chainId: m.id });
         if (!row || await ctx.runQuery(internal.markets.lastVerdict, { marketId: row._id, role: "audit" })) continue;
         const audit = await auditProposal({ marketKey: m.id, question: m.question, rules: m.rules, resolution: metadata.spec, closeTime: Number(m.close_ms) / 1000 }, (["yes", "no", "invalid"] as const)[m.outcome]);
@@ -37,6 +38,7 @@ export const run = internalAction({ args: {}, handler: async (ctx) => {
       }
       if (m.state !== 0 || !oracle) continue;
       if (!metadata.spec) continue;
+      if (metadata.spec.kind === "council" && process.env.SUI_ENABLE_LLM !== "1") continue;
       const result = await resolveMarket({ marketKey: m.id, question: m.question, rules: m.rules, resolution: metadata.spec, closeTime: Number(m.close_ms) / 1000 });
       if (result.verdict === "pending" || result.confidence < PROPOSE_CONFIDENCE) continue;
       const evidence = JSON.stringify({ marketId: m.id, result });

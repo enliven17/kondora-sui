@@ -1,0 +1,37 @@
+# Sui testnet wallets
+
+These are new wallets created for this fork. **Send only Sui testnet SUI.**
+They are unrelated to the original Solana wallets. kUSD collateral is minted for
+free by the testnet faucet; it does not need to be bought or sent manually.
+
+| Role | Testnet address |
+| --- | --- |
+| Creator / deployer | `0xd99e726620eece55420d867cb312a8c6beec92825dec9ed1bf9eb9802d2b6fe3` |
+| Oracle / crank | `0x091627e9a72f7f4c96e46fd30bf1e88b0c4f635c6112f840c677e4ac11f78619` |
+| Auditor | `0xa8be7faf34749de75e5f22a4637b787cb51b6e5549cf34dbfce881f9c9f39320` |
+
+Use https://faucet.sui.io/?network=testnet or an already funded testnet wallet.
+Initial gas was supplied for deployment and validation. Keep the creator funded
+for new markets and soak wallet funding, the oracle for proposals/finalization,
+and the auditor for challenges. The deployer's UpgradeCap remains local.
+
+Keys are saved in `.keys/sui-deployer.key`, `.keys/sui-oracle.key` and
+`.keys/sui-auditor.key`, and the applicable signer keys are set only in this
+fork's Convex server environment. Never share or commit these files.
+
+## Shared API budget
+
+The Sui deployment defaults to six open public markets, at most one new market
+per creator run, and a six-hour creator interval. It uses deterministic SUI,
+BTC and ETH price questions with **LLM calls disabled**. Consequently it does
+not consume the shared Gemini/Groq/Token Harbor model quota in normal mode.
+
+Existing on-chain markets settle according to their published rules; they are
+not cancelled or rewritten to satisfy the new creation cap. No new market is
+created while the open count is at or above six. Test-tagged smoke/soak pools
+do not consume the public creation budget.
+
+Server settings: `SUI_MAX_OPEN_MARKETS=6`, `SUI_MAX_NEW_MARKETS=1`,
+`SUI_ENABLE_LLM=0`. Optional council/model mode requires explicitly changing the
+last value to `1`. If legacy council markets are present while model mode is
+off, their permissionless 24-hour INVALID timeout remains available.
