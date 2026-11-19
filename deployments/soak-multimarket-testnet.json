@@ -1,0 +1,175 @@
+{
+  "network": "sui:testnet",
+  "runnerCommit": "10c32e5",
+  "startedAt": "2026-11-19T15:23:11.941Z",
+  "completedAt": "2026-11-19T15:23:58.617Z",
+  "minutes": 5,
+  "walletCount": 3,
+  "mode": "public-markets",
+  "gasPerWallet": "20000000",
+  "preparedWallets": 3,
+  "preparedOnly": false,
+  "marketId": "0x12a49194e91d54a3db14bae3ce562589df8dda36346000fbbfff51be04f23e5a",
+  "isolatedMarketId": "",
+  "marketIds": [
+    "0x12a49194e91d54a3db14bae3ce562589df8dda36346000fbbfff51be04f23e5a",
+    "0x1edda61e4081ad1ab24a6b0d0efc3f471b686c4385794d6e8c7ebd8f1f41b772",
+    "0x36c9d7dc81833247290abe58311313095b336b8b532fedf036d6d3446d7e3701"
+  ],
+  "marketActivity": {
+    "0x12a49194e91d54a3db14bae3ce562589df8dda36346000fbbfff51be04f23e5a": {
+      "opens": 2,
+      "closes": 2,
+      "claims": 0,
+      "notionalKusd": 0.5
+    },
+    "0x1edda61e4081ad1ab24a6b0d0efc3f471b686c4385794d6e8c7ebd8f1f41b772": {
+      "opens": 2,
+      "closes": 2,
+      "claims": 0,
+      "notionalKusd": 1
+    },
+    "0x36c9d7dc81833247290abe58311313095b336b8b532fedf036d6d3446d7e3701": {
+      "opens": 2,
+      "closes": 2,
+      "claims": 0,
+      "notionalKusd": 1.038
+    }
+  },
+  "expectedWalletKusd": "2999987300",
+  "rounds": 4,
+  "transactions": 22,
+  "failures": 0,
+  "networkRetries": 0,
+  "checks": 78,
+  "rejectedAttacks": 1,
+  "stopped": false,
+  "gasMist": "44568048",
+  "errors": [],
+  "latencyP50Ms": 1183,
+  "latencyP95Ms": 1327,
+  "rotationVerified": true,
+  "cleanupVerified": true,
+  "tradeReceipts": [
+    {
+      "at": "2026-11-19T15:23:25.010Z",
+      "action": "open",
+      "owner": "0xac8f29efdbd7f3564c5cb7f7437c623e29a48d6abba0762c389b2794e7b8a4de",
+      "marketIds": [
+        "0x12a49194e91d54a3db14bae3ce562589df8dda36346000fbbfff51be04f23e5a"
+      ],
+      "digest": "86aSCF2ZstyjZccr7UtmN2YUCETTB24rKX4uuUvsoqJm",
+      "latencyMs": 922
+    },
+    {
+      "at": "2026-11-19T15:23:26.527Z",
+      "action": "open",
+      "owner": "0x34f29da5fee42c3d025b14c30452922e4c27a851f4c0f664a0432aee94e9579b",
+      "marketIds": [
+        "0x1edda61e4081ad1ab24a6b0d0efc3f471b686c4385794d6e8c7ebd8f1f41b772"
+      ],
+      "digest": "6XdQZ8ya8vvtLVR1zGxYHp1kfvERj55wPhsxabJPp6uJ",
+      "latencyMs": 878
+    },
+    {
+      "at": "2026-11-19T15:23:28.353Z",
+      "action": "open",
+      "owner": "0x0a0d0fef1fe8f6fcac8dbf7aef7af0ced31bc97d365e6c548edeaef0c9e05e38",
+      "marketIds": [
+        "0x36c9d7dc81833247290abe58311313095b336b8b532fedf036d6d3446d7e3701"
+      ],
+      "digest": "GfEpupYypt3o5uJSvauxiP9uj92eXZLXCJxB1LeZhZM4",
+      "latencyMs": 1153
+    },
+    {
+      "at": "2026-11-19T15:23:32.690Z",
+      "action": "close",
+      "owner": "0xac8f29efdbd7f3564c5cb7f7437c623e29a48d6abba0762c389b2794e7b8a4de",
+      "marketIds": [
+        "0x12a49194e91d54a3db14bae3ce562589df8dda36346000fbbfff51be04f23e5a"
+      ],
+      "digest": "EwEtAg8CZ5xaN1kKexHjbgwvCJpU4Vyak5M6ShBfnAbv",
+      "latencyMs": 1267
+    },
+    {
+      "at": "2026-11-19T15:23:34.210Z",
+      "action": "close",
+      "owner": "0x34f29da5fee42c3d025b14c30452922e4c27a851f4c0f664a0432aee94e9579b",
+      "marketIds": [
+        "0x1edda61e4081ad1ab24a6b0d0efc3f471b686c4385794d6e8c7ebd8f1f41b772"
+      ],
+      "digest": "ssNCB8QvTSRdX2bPhbAqziXuVW7f1PA8kMZ7AtKkCzq",
+      "latencyMs": 887
+    },
+    {
+      "at": "2026-11-19T15:23:36.029Z",
+      "action": "close",
+      "owner": "0x0a0d0fef1fe8f6fcac8dbf7aef7af0ced31bc97d365e6c548edeaef0c9e05e38",
+      "marketIds": [
+        "0x36c9d7dc81833247290abe58311313095b336b8b532fedf036d6d3446d7e3701"
+      ],
+      "digest": "88DmzACrVocEe4SHo8VrfRPrtQLVTv43e88L9TPdHvm2",
+      "latencyMs": 1187
+    },
+    {
+      "at": "2026-11-19T15:23:39.526Z",
+      "action": "open",
+      "owner": "0xac8f29efdbd7f3564c5cb7f7437c623e29a48d6abba0762c389b2794e7b8a4de",
+      "marketIds": [
+        "0x1edda61e4081ad1ab24a6b0d0efc3f471b686c4385794d6e8c7ebd8f1f41b772"
+      ],
+      "digest": "6WsZ7u4Hk5rPhfPEiXDjWeRFcJ7t5yFHv8HK1F8YHPZD",
+      "latencyMs": 1183
+    },
+    {
+      "at": "2026-11-19T15:23:41.027Z",
+      "action": "open",
+      "owner": "0x34f29da5fee42c3d025b14c30452922e4c27a851f4c0f664a0432aee94e9579b",
+      "marketIds": [
+        "0x36c9d7dc81833247290abe58311313095b336b8b532fedf036d6d3446d7e3701"
+      ],
+      "digest": "89utHhqt4RmoehTPuY6DxNUh6TWg4dp3ohnjgBTzekF9",
+      "latencyMs": 847
+    },
+    {
+      "at": "2026-11-19T15:23:42.831Z",
+      "action": "open",
+      "owner": "0x0a0d0fef1fe8f6fcac8dbf7aef7af0ced31bc97d365e6c548edeaef0c9e05e38",
+      "marketIds": [
+        "0x12a49194e91d54a3db14bae3ce562589df8dda36346000fbbfff51be04f23e5a"
+      ],
+      "digest": "7KVe8tLTjs6LrKvYzG2MDmaKSHpb2Ek6KgTKtpD9H7wM",
+      "latencyMs": 1182
+    },
+    {
+      "at": "2026-11-19T15:23:45.966Z",
+      "action": "close",
+      "owner": "0xac8f29efdbd7f3564c5cb7f7437c623e29a48d6abba0762c389b2794e7b8a4de",
+      "marketIds": [
+        "0x1edda61e4081ad1ab24a6b0d0efc3f471b686c4385794d6e8c7ebd8f1f41b772"
+      ],
+      "digest": "9mKQNsdKTFi3LnfiP2hpqG8gn6ibyMrSRwq22wzkfWTm",
+      "latencyMs": 883
+    },
+    {
+      "at": "2026-11-19T15:23:47.787Z",
+      "action": "close",
+      "owner": "0x34f29da5fee42c3d025b14c30452922e4c27a851f4c0f664a0432aee94e9579b",
+      "marketIds": [
+        "0x36c9d7dc81833247290abe58311313095b336b8b532fedf036d6d3446d7e3701"
+      ],
+      "digest": "D2bMPBWcEnFUSNX5TmGNhPAJL2pf1pEmVMLedpXykRMz",
+      "latencyMs": 1194
+    },
+    {
+      "at": "2026-11-19T15:23:49.645Z",
+      "action": "close",
+      "owner": "0x0a0d0fef1fe8f6fcac8dbf7aef7af0ced31bc97d365e6c548edeaef0c9e05e38",
+      "marketIds": [
+        "0x12a49194e91d54a3db14bae3ce562589df8dda36346000fbbfff51be04f23e5a"
+      ],
+      "digest": "BJjZVk7TtKNsW4LtVSAcFFCCLKy3RTMvEtY3iV9WViLJ",
+      "latencyMs": 1221
+    }
+  ]
+}

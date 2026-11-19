@@ -7,10 +7,12 @@ Validated on 2026-11-19 against the package in `deployments/testnet.json`.
   Liquidity tests cover preserved prices and claims, wrong admin, wrong registry,
   and rejection after the close. The compatible v2 upgrade passed an on-chain
   simulation before being signed and executed.
-- Ten TypeScript tests passed, including 2,000 varied buy/sell rounding checks,
+- Thirteen TypeScript tests passed, including 2,000 varied buy/sell rounding checks,
   BCS rejection, leverage/reserve caps, configured-package transaction targets
   address/cooldown validation and internal-only trading/admin writes. The sole
-  public write action is the bounded daily test-token faucet.
+  public write action is the bounded daily test-token faucet. Soak tests cover
+  balanced allocation of 200 wallets over 11 pools, rotation, public-market
+  selection and reserve checks that allow unrelated traders.
 - Faucet Move tests verify exact 100-kUSD supply, the 24-hour boundary, duplicate
   and repeated welcome rejection, sponsor authorization and daily budget limits.
   Real testnet delivery to a wallet with zero SUI succeeded; reconnect, manual
@@ -27,10 +29,17 @@ Validated on 2026-11-19 against the package in `deployments/testnet.json`.
 - The successful short resumed soak exercised two wallets and ten accounting
   checks with no execution/invariant failures. It needed seven transport retries.
   Long-duration soaking remains a user-run operation; see `docs/SOAK.md`.
+- A real public-market soak used three wallets over three existing markets for
+  four rounds: six opens, six closes, 22 total transactions and 78 accounting
+  checks, with zero failures or transport retries. Each wallet rotated to another
+  pool, and cleanup left all three trading accounts empty with no positions.
+  Public digests are in `deployments/soak-multimarket-testnet.json`.
 - All 200 prepared wallets were checked against their local keys and on-chain
-  accounts, gas and kUSD balances. They hold 20,000 kUSD in accounts and 180,000
-  kUSD outside accounts. The dedicated pool has 10,000 kUSD liquidity. Public
-  receipts record preparation and funding; no long 200-wallet run is claimed.
+  accounts, gas and kUSD balances. At preparation they held 20,000 kUSD in accounts
+  and 180,000 kUSD outside accounts. The dedicated pool received 10,000 kUSD
+  liquidity. A later single-market session completed five rounds but failed on
+  DNS during cleanup; no clean long 200-wallet run is claimed. Public preparation
+  receipts are historical; resume checks current balances and recovers positions.
 - The Sui wallet selection dialog and live market list were inspected in the
   browser. Browser signing with a user wallet was not automated; CLI signatures
   were used for the recorded chain tests.
